@@ -8,6 +8,7 @@ import Home from "./components/Home";
 import ChessGame from "./components/ChessGame";
 import About from "./components/About";
 import Rules from "./components/Rules";
+import Test1 from './components/test1';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/chessGame" element={<ChessGame />} />
+        <Route path="/test1" element={<Test1 />} />
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Home />} />
           <Route path="rules" element={<Rules />} /> 
