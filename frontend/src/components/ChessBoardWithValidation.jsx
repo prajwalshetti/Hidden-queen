@@ -1,41 +1,41 @@
 import { Chessboard } from "react-chessboard";
-import { useState } from "react";
-import { Chess } from "chess.js"; // You'll need to install this library
-function ChessBoardWithValidation() {
-    // Initialize chess.js instance to handle game logic
+import { useState, useEffect } from "react";
+import { Chess } from "chess.js";
+
+function ChessBoardWithValidation({ socket, roomID, playerRole, boardState }) {
     const [game, setGame] = useState(new Chess());
-    
-    // Function to handle piece movement
+
+    useEffect(() => {
+        game.load(boardState);
+        setGame(new Chess(game.fen()));
+    }, [boardState]);
+
     function onDrop(sourceSquare, targetSquare) {
+        if (playerRole !== "w" && playerRole !== "b") return false;
+        if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
+
         try {
-            // Attempt to make the move
             const move = game.move({
                 from: sourceSquare,
                 to: targetSquare,
-                promotion: "q", // Default promote to queen
+                promotion: "q",
             });
-            
-            // If move is invalid, return false to revert
+
             if (move === null) return false;
-            
-            // Update the game state
+
             setGame(new Chess(game.fen()));
-            
-            // For WebSocket implementation
-            console.log(`Move from ${sourceSquare} to ${targetSquare}`);
-            // TODO: Emit move to WebSocket
-            
+            socket.emit("move", { move: game.fen(), roomID });
             return true;
         } catch (error) {
             return false;
         }
     }
-    
+
     return (
         <div className="flex justify-center items-center">
             <div style={{ width: "400px", height: "400px" }}>
-                <Chessboard 
-                    position={game.fen()} 
+                <Chessboard
+                    position={game.fen()}
                     onPieceDrop={onDrop}
                     boardWidth={400}
                     areArrowsAllowed={true}
@@ -46,4 +46,4 @@ function ChessBoardWithValidation() {
     );
 }
 
-export default ChessBoardWithValidation
+export default ChessBoardWithValidation;
