@@ -107,14 +107,7 @@ function ChessGame() {
                   <span className="ml-2 font-bold text-purple-400">{playerRole}</span>
                 </motion.div>
                 
-                <motion.button
-                  onClick={() => setGameStarted(false)}
-                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Leave Game
-                </motion.button>
+                
               </div>
               
               {message && (
