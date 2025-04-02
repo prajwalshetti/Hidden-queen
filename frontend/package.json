@@ -15,6 +15,7 @@
     "axios": "^1.8.4",
     "chess.js": "^1.1.0",
     "chessground": "^9.1.1",
+    "framer-motion": "^12.6.3",
     "lucide-react": "^0.485.0",
     "react": "^19.0.0",
     "react-chessboard": "^4.7.2",
