@@ -79,4 +79,20 @@ const getUserById=asyncHandler(async(req,res)=>{
     res.status(200).send(user)
 })
 
-export {register,loginuser,logoutuser,getAllUsers,getUserById}
+const getLoggedInUserId=asyncHandler(async(req,res)=>{
+    const user=req.user
+
+    if(!user)throw new ApiError(400,"Not logged in")
+
+    res.status(200).send(user._id)
+})
+
+const getLoggedInUserName=asyncHandler(async(req,res)=>{
+    const user=req.user
+
+    if(!user)throw new ApiError(400,"Not logged in")
+
+    res.status(200).send(user.username)
+})
+
+export {register,loginuser,logoutuser,getAllUsers,getUserById,getLoggedInUserId,getLoggedInUserName}

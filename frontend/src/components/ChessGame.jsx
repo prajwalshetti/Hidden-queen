@@ -1,4 +1,4 @@
-// ChessGame.jsx
+//ChessGame.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChessBoardWithValidation from './ChessBoardWithValidation';
@@ -15,18 +15,77 @@ function ChessGame() {
   const [gameStarted, setGameStarted] = useState(false);
   const [message, setMessage] = useState("");
   const [showRules, setShowRules] = useState(true);
+  const [isResigning, setIsResigning] = useState(false);
 
   useEffect(() => {
-    socket.on("playerRole", (role) => setPlayerRole(role));
-    socket.on("boardState", (state) => setBoardState(state));
-    socket.on("move", (move) => setBoardState(move));
-    socket.on("gameOver", (msg) => setMessage(msg));
+    // Check localStorage on component mount
+    const savedRoomID = localStorage.getItem('roomID');
+    const savedRole = localStorage.getItem('playerRole');
+    
+    if (savedRoomID && savedRole) {
+      setRoomID(savedRoomID);
+      setPlayerRole(savedRole);
+      setGameStarted(true);
+      
+      // Reconnect to the room
+      socket.emit("joinRoomBack", {roomID: savedRoomID, savedRole});
+      }
+    
+    socket.on("playerRole", (role) => {
+      setPlayerRole(role);
+      localStorage.setItem('playerRole', role);
+    });
+    
+    socket.on("boardState", (state) => {
+      setBoardState(state);
+    });
+    
+    socket.on("move", (move) => {
+      setBoardState(move);
+    });
+    
+    socket.on("gameOver", (msg) => {
+      setMessage(msg);
+      // Clear localStorage when game ends
+      localStorage.removeItem('roomID');
+      localStorage.removeItem('playerRole');
+    });
+
+    return () => {
+      socket.off("playerRole");
+      socket.off("boardState");
+      socket.off("move");
+      socket.off("gameOver");
+    };
   }, []);
 
   const joinRoom = (roomID) => {
     setRoomID(roomID);
     socket.emit("joinRoom", roomID);
     setGameStarted(true);
+    
+    // Save to localStorage
+    localStorage.setItem('roomID', roomID);
+    // playerRole will be set when server responds
+  };
+
+  const handleResign = () => {
+    if (playerRole !== "spectator") {
+      socket.emit("resign", { roomID });
+      setMessage(`You resigned. ${playerRole === 'w' ? 'Black' : 'White'} wins.`);
+      
+      // Clear localStorage on resign
+      localStorage.removeItem('roomID');
+      localStorage.removeItem('playerRole');
+    }
+  };
+
+  const confirmResign = () => {
+    setIsResigning(true);
+  };
+  
+  const cancelResign = () => {
+    setIsResigning(false);
   };
 
   return (
@@ -104,11 +163,44 @@ function ChessGame() {
                   transition={{ delay: 0.2, type: "spring" }}
                 >
                   <span className="text-gray-400">Role:</span> 
-                  <span className="ml-2 font-bold text-purple-400">{playerRole}</span>
+                  <span className="ml-2 font-bold text-purple-400">{playerRole === 'w' ? 'White' : playerRole === 'b' ? 'Black' : 'Spectator'}</span>
                 </motion.div>
                 
-                
+                {playerRole !== "spectator" && !isResigning && (
+                  <motion.button
+                    onClick={confirmResign}
+                    className="bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Resign
+                  </motion.button>
+                )}
               </div>
+              
+              {isResigning && (
+                <motion.div 
+                  className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <p className="mb-3 text-center">Are you sure you want to resign?</p>
+                  <div className="flex justify-center space-x-4">
+                    <button 
+                      onClick={handleResign}
+                      className="bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+                    >
+                      Yes, Resign
+                    </button>
+                    <button 
+                      onClick={cancelResign}
+                      className="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              )}
               
               {message && (
                 <motion.div 
