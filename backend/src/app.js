@@ -1,4 +1,3 @@
-//App.js
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -32,7 +31,7 @@ app.use("/api/v1/user", userRouter);
 io.on("connection", (socket) => {
     console.log("New connection:", socket.id);
 
-    socket.on("joinRoomBack", ({roomID,savedRole}) => {
+    socket.on("joinRoomBack", ({roomID, savedRole}) => {
         console.log(`Player ${socket.id} is joining room ${roomID}`);
 
         // Create room if it doesn't exist
@@ -130,9 +129,64 @@ io.on("connection", (socket) => {
 
         const { white, black } = rooms[roomID];
         if (socket.id === white) {
-            io.to(roomID).emit("gameOver", "Black wins by resignation");
+            // Send message to the player who resigned
+            socket.emit("gameOver", "You resigned. Black wins.");
+            
+            // Send message to the opponent about the resignation
+            if (black) {
+                io.to(black).emit("opponentResigned", "White resigned. You win!");
+            }
+            
+            // Inform spectators
+            rooms[roomID].spectators.forEach(spectatorId => {
+                io.to(spectatorId).emit("gameOver", "White resigned. Black wins.");
+            });
         } else if (socket.id === black) {
-            io.to(roomID).emit("gameOver", "White wins by resignation");
+            // Send message to the player who resigned
+            socket.emit("gameOver", "You resigned. White wins.");
+            
+            // Send message to the opponent about the resignation
+            if (white) {
+                io.to(white).emit("opponentResigned", "Black resigned. You win!");
+            }
+            
+            // Inform spectators
+            rooms[roomID].spectators.forEach(spectatorId => {
+                io.to(spectatorId).emit("gameOver", "Black resigned. White wins.");
+            });
+        }
+    });
+
+    socket.on("leaveRoom", ({ roomID }) => {
+        if (!rooms[roomID]) return;
+        
+        const room = rooms[roomID];
+        
+        // Remove the player from the appropriate role
+        if (room.white === socket.id) {
+            room.white = null;
+            room.boardState="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            console.log(`White player left room ${roomID}`);
+        } else if (room.black === socket.id) {
+            room.black = null;
+            room.boardState="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            console.log(`Black player left room ${roomID}`);
+        } else {
+            // Remove from spectators
+            room.spectators = room.spectators.filter(id => id !== socket.id);
+            console.log(`Spectator left room ${roomID}`);
+        }
+        
+        // Leave the socket.io room
+        socket.leave(roomID);
+        
+        // Clean up socketToRoom mapping
+        delete socketToRoom[socket.id];
+        
+        // Clean up empty rooms
+        if (!room.white && !room.black && room.spectators.length === 0) {
+            delete rooms[roomID];
+            console.log(`Room ${roomID} deleted (empty)`);
         }
     });
 
@@ -145,11 +199,11 @@ io.on("connection", (socket) => {
             const room = rooms[roomID];
             
             if (room.white === socket.id) {
-                // room.white = null;
-                // io.to(roomID).emit("gameOverr", "Black wins by opponent disconnection");
+                // We're not automatically ending the game on disconnect as requested
+                room.white = null;
             } else if (room.black === socket.id) {
-                // room.black = null;
-                // io.to(roomID).emit("gameOver", "White wins by opponent disconnection");
+                // We're not automatically ending the game on disconnect as requested
+                room.black = null;
             } else {
                 // Remove from spectators if applicable
                 room.spectators = room.spectators.filter(id => id !== socket.id);
