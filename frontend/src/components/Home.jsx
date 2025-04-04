@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 function Home() {
   const navigate = useNavigate();
 
-  const handlePlay = () => {
-    navigate('/chessGame');
+  const handlePlay = (varID) => {
+    if(varID=='hidden-queen') navigate('/hqchessGame')
+    else navigate('/chessGame');
   };
 
   const chessVariants = [
@@ -48,7 +49,7 @@ function Home() {
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-white mb-4">{variant.name}</h2>
                 <button
-                  onClick={handlePlay}
+                  onClick={() => handlePlay(variant.id)}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-300"
                 >
                   Play Now
