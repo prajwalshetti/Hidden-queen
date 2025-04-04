@@ -1,21 +1,41 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
-const ChatBox = ({ socket, roomID, username }) => {
+const ChatBox = ({ socket, roomID, username, playerRole }) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
 
+  // Set up chat message handling
   useEffect(() => {
+    // First, clear existing listeners to prevent duplicates
+    socket.off("chatMessage");
+    socket.off("chatHistory");
+    
+    // Listen for new chat messages
     socket.on("chatMessage", (msg) => {
-      setMessages(prevMessages => [...prevMessages, msg]);
+      setMessages(prevMessages => [...prevMessages, {
+        ...msg,
+        isOwnMessage: msg.username === username
+      }]);
+    });
+    
+    // Listen for chat history when joining a room
+    socket.on("chatHistory", (history) => {
+      const formattedHistory = history.map(msg => ({
+        ...msg,
+        isOwnMessage: msg.username === username
+      }));
+      setMessages(formattedHistory);
     });
 
     return () => {
       socket.off("chatMessage");
+      socket.off("chatHistory");
     };
-  }, [socket]);
+  }, [socket, username]);
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -31,11 +51,31 @@ const ChatBox = ({ socket, roomID, username }) => {
         roomID,
         username,
         text: message,
+        playerRole: playerRole, // Include player role
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
+      
       socket.emit("sendMessage", chatMessage);
-      setMessages(prevMessages => [...prevMessages, { ...chatMessage, isOwnMessage: true }]);
       setMessage('');
+      // Don't add message locally, wait for server to broadcast it back
+    }
+  };
+
+  // Determine chat box title based on player role
+  const getChatTitle = () => {
+    if (playerRole === 'w' || playerRole === 'b') {
+      return "Player Chat";
+    } else {
+      return "Spectator Chat";
+    }
+  };
+
+  // Get appropriate chat description
+  const getChatDescription = () => {
+    if (playerRole === 'w' || playerRole === 'b') {
+      return "Chat with your opponent";
+    } else {
+      return "Chat with other spectators";
     }
   };
 
@@ -46,8 +86,12 @@ const ChatBox = ({ socket, roomID, username }) => {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="text-purple-400 font-bold mb-3 text-lg border-b border-gray-700 pb-2">
-        Chat Room
+      <div className="text-purple-400 font-bold mb-2 text-lg border-b border-gray-700 pb-2">
+        {getChatTitle()}
+      </div>
+      
+      <div className="text-gray-500 text-xs mb-3 italic">
+        {getChatDescription()}
       </div>
       
       <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mb-3 px-1">

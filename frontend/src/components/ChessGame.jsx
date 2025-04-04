@@ -21,7 +21,7 @@ function ChessGame() {
   const [isResigning, setIsResigning] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   
-  // New state variables for player information and clock
+  // Player information and clock state variables
   const [username, setUsername] = useState("");
   const [whiteUsername, setWhiteUsername] = useState("White Player");
   const [blackUsername, setBlackUsername] = useState("Black Player");
@@ -47,19 +47,16 @@ function ChessGame() {
       setGameStarted(true);
       
       // Reconnect to the room
-      socket.emit("joinRoomBack", {roomID: savedRoomID, savedRole, username: savedUsername || "Player"});
+      socket.emit("joinRoomBack", {
+        roomID: savedRoomID, 
+        savedRole, 
+        username: savedUsername || "Player"
+      });
     }
     
     socket.on("playerRole", (role) => {
       setPlayerRole(role);
       localStorage.setItem('playerRole', role);
-      
-      // Update player username based on role
-      if (role === 'w') {
-        setWhiteUsername(username || "You");
-      } else if (role === 'b') {
-        setBlackUsername(username || "You");
-      }
     });
     
     socket.on("boardState", (state) => {
@@ -86,11 +83,13 @@ function ChessGame() {
       setGameEnded(true);
     });
     
-    socket.on("playerInfo", (info) => {
-      if (info.role === 'w') {
-        setWhiteUsername(info.username || "White Player");
-      } else if (info.role === 'b') {
-        setBlackUsername(info.username || "Black Player");
+    // Listen for the new playersInfo event from the server
+    socket.on("playersInfo", (info) => {
+      if (info.whiteUsername) {
+        setWhiteUsername(info.whiteUsername);
+      }
+      if (info.blackUsername) {
+        setBlackUsername(info.blackUsername);
       }
     });
 
@@ -100,9 +99,16 @@ function ChessGame() {
       socket.off("move");
       socket.off("gameOver");
       socket.off("opponentResigned");
-      socket.off("playerInfo");
+      socket.off("playersInfo");
     };
-  }, [username]);
+  }, []);
+
+  // Update username on server whenever it changes
+  useEffect(() => {
+    if (roomID && playerRole && username) {
+      socket.emit("updateUsername", { roomID, role: playerRole, username });
+    }
+  }, [username, roomID, playerRole]);
 
   const joinRoom = (roomID) => {
     if (!username) {
@@ -116,15 +122,12 @@ function ChessGame() {
   
   const completeJoinRoom = (roomID) => {
     setRoomID(roomID);
-    socket.emit("joinRoom", roomID);
+    socket.emit("joinRoom", { roomID, username });
     setGameStarted(true);
     
     // Save to localStorage
     localStorage.setItem('roomID', roomID);
     // playerRole will be set when server responds
-    
-    // Emit player info to server
-    socket.emit("playerInfo", { roomID, username });
   };
   
   const handleUsernameSubmit = (e) => {
@@ -168,6 +171,9 @@ function ChessGame() {
     
     // Reset states
     setGameStarted(false);
+    setRoomID("");
+    setPlayerRole("");
+    setBoardState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     setMessage("");
     setGameEnded(false);
     
@@ -186,15 +192,31 @@ function ChessGame() {
 
   // Helper function to get the appropriate username display
   const getPlayerName = (role) => {
-    if (playerRole === role) {
-      return username || "You";
-    } else if (role === 'w') {
-      return whiteUsername;
+    if (role === 'w') {
+      return whiteUsername || "White Player";
     } else if (role === 'b') {
-      return blackUsername;
+      return blackUsername || "Black Player";
     }
     return "Player";
   };
+
+  // Helper to determine chat title and description based on role
+  const getChatInfo = () => {
+    if (playerRole === 'w' || playerRole === 'b') {
+      const opponent = playerRole === 'w' ? blackUsername || "Black Player" : whiteUsername || "White Player";
+      return {
+        title: "Player Chat",
+        description: `Chat with ${opponent}`
+      };
+    } else {
+      return {
+        title: "Spectator Chat",
+        description: "Chat with other spectators"
+      };
+    }
+  };
+
+  const chatInfo = getChatInfo();
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
@@ -354,6 +376,9 @@ function ChessGame() {
                 <div className="text-gray-400 text-sm">
                   <p>Room ID: {roomID}</p>
                   <p>Your role: {playerRole === 'w' ? 'White' : playerRole === 'b' ? 'Black' : 'Spectator'}</p>
+                  <p className="mt-4 text-gray-300 font-semibold">Players:</p>
+                  <p>White: {whiteUsername || "Waiting for player..."}</p>
+                  <p>Black: {blackUsername || "Waiting for player..."}</p>
                   <p className="mt-4 text-xs text-gray-500">Game statistics and additional controls will appear here in future updates.</p>
                 </div>
               </div>
@@ -368,6 +393,7 @@ function ChessGame() {
                   timeRemaining={blackTime}
                   onTimeUp={() => handleTimeUp('black')}
                   playerColor="black"
+                  isYou={playerRole === 'b'}
                 />
                 
                 <div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-gray-700">
@@ -469,6 +495,7 @@ function ChessGame() {
                   timeRemaining={whiteTime}
                   onTimeUp={() => handleTimeUp('white')}
                   playerColor="white"
+                  isYou={playerRole === 'w'}
                 />
               </div>
               
@@ -478,6 +505,9 @@ function ChessGame() {
                   socket={socket} 
                   roomID={roomID} 
                   username={username || "Anonymous"} 
+                  playerRole={playerRole}
+                  chatTitle={chatInfo.title}
+                  chatDescription={chatInfo.description}
                 />
               </div>
             </motion.div>
