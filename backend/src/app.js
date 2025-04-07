@@ -6,6 +6,40 @@ import { Server } from "socket.io";
 
 const app = express();
 const url = process.env.FRONT_END_URL;
+const boardString="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+// Helper function to update the board string
+function updateBoardStateToQueen(boardString, selectedColumn,isWhite) {
+    // Split FEN into board placement and other fields (side to move, etc.)
+    const parts = boardString.split(" ");
+    const boardRows = parts[0].split("/");
+  
+    // For white, pawns are on rank 2 (index 6, since FEN rows go from rank8 at index 0 to rank1 at index 7)
+    // For black, pawns are on rank 7 (index 1)
+    const rowIndex = isWhite ? 6 : 1;
+    const rowStr = boardRows[rowIndex];
+    
+    // Since in the pawn rows there are exactly 8 characters (all pawns),
+    // we can treat the row as a simple array.
+    const row = rowStr.split("");
+    const fileIndex = selectedColumn - 1; // convert 1-based index to 0-based
+    
+    // Check if the pawn is at that file and update it
+    if (isWhite) {
+      if (row[fileIndex] === "P") {
+        row[fileIndex] = "Q";
+      }
+    } else {
+      if (row[fileIndex] === "p") {
+        row[fileIndex] = "q";
+      }
+    }
+    
+    // Update the row and rebuild the FEN
+    boardRows[rowIndex] = row.join("");
+    parts[0] = boardRows.join("/");
+    return parts.join(" ");
+  }  
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -32,6 +66,23 @@ app.use("/api/v1/user", userRouter);
 io.on("connection", (socket) => {
     console.log("New connection:", socket.id);
 
+    socket.on("changeToQueen", ({ roomID, index, isWhite }) => {
+        console.log(`Received changeToQueen for room ${roomID} with index ${index}`);
+        
+        // Retrieve the room
+        const room = rooms[roomID];
+        if (!room) {
+            console.error("Room not found:", roomID);
+            return;
+        }
+        
+        // Update the boardState: for white, change "P" to "Q"; for black, change "p" to "q"
+        room.boardState = updateBoardStateToQueen(room.boardState, index, isWhite);
+        
+        // Broadcast the updated board state to all players in the room
+        io.to(roomID).emit("boardState", room.boardState);
+    });    
+
     socket.on("joinRoomBack", ({roomID, savedRole, username}) => {
         console.log(`Player ${socket.id} (${username}) is rejoining room ${roomID}`);
 
@@ -42,7 +93,7 @@ io.on("connection", (socket) => {
                 black: null,
                 whiteUsername: null,
                 blackUsername: null,
-                boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                boardState: boardString,
                 spectators: [],
                 playerMessages: [], // Messages between white and black players
                 spectatorMessages: [] // Messages among spectators
@@ -100,7 +151,7 @@ io.on("connection", (socket) => {
                 black: null,
                 whiteUsername: null,
                 blackUsername: null,
-                boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                boardState: boardString,
                 spectators: [],
                 playerMessages: [], // Messages between white and black players
                 spectatorMessages: [] // Messages among spectators
@@ -262,7 +313,7 @@ io.on("connection", (socket) => {
         if (room.white === socket.id) {
             room.white = null;
             room.whiteUsername = null;
-            room.boardState="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            room.boardState=boardString;
             console.log(`White player left room ${roomID}`);
             
             // Broadcast updated player info
@@ -273,7 +324,7 @@ io.on("connection", (socket) => {
         } else if (room.black === socket.id) {
             room.black = null;
             room.blackUsername = null;
-            room.boardState="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            room.boardState=boardString;
             console.log(`Black player left room ${roomID}`);
             
             // Broadcast updated player info

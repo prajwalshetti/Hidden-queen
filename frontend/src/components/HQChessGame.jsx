@@ -1,3 +1,4 @@
+// HQChessGame.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChessBoardWithValidation from './ChessBoardWithValidation';
@@ -13,8 +14,9 @@ const socket = io("http://localhost:8080");
 function HQChessGame() {
   const navigate = useNavigate();
   const [roomID, setRoomID] = useState("");
+  const [boardString, setBoardString] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [playerRole, setPlayerRole] = useState("");
-  const [boardState, setBoardState] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  const [boardState, setBoardState] = useState(boardString);
   const [gameStarted, setGameStarted] = useState(false);
   const [message, setMessage] = useState("");
   const [showRules, setShowRules] = useState(true);
@@ -28,7 +30,12 @@ function HQChessGame() {
   const [isWhiteTurn, setIsWhiteTurn] = useState(true);
   const [usernameInput, setUsernameInput] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
-
+  const [hiddenQueenSelectionPhase, setHiddenQueenSelectionPhase] = useState(false);
+  // NEW: State for tracking the hidden queen's square.
+  const [hiddenQueenSquare, setHiddenQueenSquare] = useState(null);
+const updateHiddenQueenSquare = (newSquare) => {
+  setHiddenQueenSquare(newSquare);
+};
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
     const savedRole = localStorage.getItem('playerRole');
@@ -103,6 +110,7 @@ function HQChessGame() {
   };
   
   const completeJoinRoom = (roomID) => {
+    setHiddenQueenSelectionPhase(true);
     setRoomID(roomID);
     socket.emit("joinRoom", { roomID, username });
     setGameStarted(true);
@@ -142,7 +150,7 @@ function HQChessGame() {
     setGameStarted(false);
     setRoomID("");
     setPlayerRole("");
-    setBoardState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    setBoardState(boardString);
     setMessage("");
     setGameEnded(false);
     navigate('/dashboard');
@@ -170,6 +178,23 @@ function HQChessGame() {
     } else {
       return { title: "Spectator Chat", description: "Chat with other spectators" };
     }
+  };
+
+  // NEW: Modify handleHiddenQueenSelection to calculate and store the square.
+  const handleHiddenQueenSelection = (col) => {
+    console.log("The pawn is selected on the column", col);
+    let file = String.fromCharCode(96 + col); // converts 1->a, 2->b, etc.
+    // For white, hidden queen pawn is on rank 2; for black, rank 7.
+    let rank = playerRole === 'w' ? "2" : "7";
+    const selectedSquare = file + rank;
+    
+    // Save the square for custom rendering.
+    setHiddenQueenSquare(selectedSquare);
+    
+    // Optionally, emit the event to the backend
+    socket.emit("changeToQueen", { roomID, index: col, isWhite: playerRole === 'w' });
+    
+    setHiddenQueenSelectionPhase(false);
   };
 
   const chatInfo = getChatInfo();
@@ -295,6 +320,36 @@ function HQChessGame() {
                       )}
                     </div>
                   </div>
+
+                  {hiddenQueenSelectionPhase && (playerRole === 'w' || playerRole === 'b') && (
+                    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                      <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-purple-700 max-w-md w-full">
+                        <h2 className="text-2xl font-bold text-center mb-4 text-purple-400">
+                          Select Your Hidden Queen
+                        </h2>
+                        <p className="text-gray-300 mb-4">
+                          Choose which pawn will secretly be your hidden queen. It will look like a pawn but can move like a queen.
+                          It will be revealed to your opponent when you make a non-pawn move with it.
+                        </p>
+                        <div className="grid grid-cols-8 gap-2 mb-4">
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((col) => (
+                            <button
+                              key={col}
+                              onClick={() => handleHiddenQueenSelection(col)}
+                              className="bg-gray-700 hover:bg-purple-700 text-white py-4 rounded transition-colors"
+                            >
+                              {String.fromCharCode(96 + col)}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-sm text-gray-400">
+                          {playerRole === 'w' 
+                            ? "Your pawns are on the 2nd rank (a2-h2)" 
+                            : "Your pawns are on the 7th rank (a7-h7)"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   
                   {isResigning && (
                     <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600">
@@ -317,8 +372,14 @@ function HQChessGame() {
                   )}
                   
                   <div>
-                    <ChessBoardWithValidation socket={socket} roomID={roomID} playerRole={playerRole} 
-                      boardState={boardState} gameEnded={gameEnded} />
+                    {/* Pass the hiddenQueenSquare prop to the chessboard */}
+                    <ChessBoardWithValidation 
+                      socket={socket} 
+                      roomID={roomID} 
+                      playerRole={playerRole} 
+                      boardState={boardState}
+                      hiddenQueenSquare={hiddenQueenSquare}
+                    />
                   </div>
                 </div>
                 
