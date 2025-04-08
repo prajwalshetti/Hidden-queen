@@ -41,6 +41,26 @@ function updateBoardStateToQueen(boardString, selectedColumn,isWhite) {
     return parts.join(" ");
   }  
 
+  function changeToQueen(roomID, isWhite, index) {
+    const room = rooms[roomID];
+    if (!room || index < 1 || index > 8) return;
+
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const square = files[index - 1] + (isWhite ? '2' : '7'); // 'a2' for white, 'a7' for black
+
+    if (isWhite) {
+        room.hqwsquare = square;
+        room.hqwstatus = 1; // Assigned
+        console.log("White Hidden Queen assigned to square: ", square);
+    } else {
+        room.hqbsquare = square;
+        room.hqbstatus = 1; // Assigned
+        console.log("Black Hidden Queen assigned to square: ", square);
+    }
+
+}
+
+
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -76,11 +96,69 @@ io.on("connection", (socket) => {
             return;
         }
         
-        // Update the boardState: for white, change "P" to "Q"; for black, change "p" to "q"
         room.boardState = updateBoardStateToQueen(room.boardState, index, isWhite);
-        
-        // Broadcast the updated board state to all players in the room
+        changeToQueen(roomID, isWhite, index)
         io.to(roomID).emit("boardState", room.boardState);
+    });    
+
+    socket.on("revealHQ", ({ roomID, color }) => {
+        const room = rooms[roomID];
+        if (!room) return;
+    
+        if (color === "w") {
+            room.hqwstatus = 2; // Revealed
+            console.log(`White Hidden Queen revealed in room ${roomID}`);
+        } else if (color === "b") {
+            room.hqbstatus = 2; // Revealed
+            console.log(`Black Hidden Queen revealed in room ${roomID}`);
+        }
+    
+        // Emit the updated HQ info to all clients in the room
+        io.to(roomID).emit("playersHQ", {
+            hqwsquare: room.hqwsquare,
+            hqbsquare: room.hqbsquare,
+            hqwstatus: room.hqwstatus,
+            hqbstatus: room.hqbstatus
+        });
+    });
+
+    socket.on("changeHQSquare", ({ roomID, color, newSquare }) => {
+        const room = rooms[roomID];
+        if (!room) return;
+    
+        if (color === "w" && room.hqwstatus < 3) {
+            room.hqwsquare = newSquare;
+        } else if (color === "b" && room.hqbstatus < 3) {
+            room.hqbsquare = newSquare;
+        }        
+    
+        io.to(roomID).emit("playersHQ", {
+            hqwsquare: room.hqwsquare,
+            hqbsquare: room.hqbsquare,
+            hqwstatus: room.hqwstatus,
+            hqbstatus: room.hqbstatus
+        });
+    });    
+
+    socket.on("captureHQ", ({ roomID, color }) => {
+        const room = rooms[roomID];
+        if (!room) return;
+    
+        if (color === "w" && room.hqwstatus < 3) {
+            room.hqwstatus = 3; // Captured
+            console.log(`White HQ captured`);
+        } else if (color === "b" && room.hqbstatus < 3) {
+            room.hqbstatus = 3; // Captured
+            console.log(`Black HQ captured`);
+        }
+    
+        // Emit updated HQ data
+        io.to(roomID).emit("playersHQ", {
+            hqwsquare: room.hqwsquare,
+            hqbsquare: room.hqbsquare,
+            hqwstatus: room.hqwstatus,
+            hqbstatus: room.hqbstatus,
+        });
     });    
 
     socket.on("joinRoomBack", ({roomID, savedRole, username}) => {
@@ -96,7 +174,11 @@ io.on("connection", (socket) => {
                 boardState: boardString,
                 spectators: [],
                 playerMessages: [], // Messages between white and black players
-                spectatorMessages: [] // Messages among spectators
+                spectatorMessages: [], // Messages among spectators
+                hqwsquare: null, 
+                hqbsquare: null, 
+                hqwstatus: 0, 
+                hqbstatus: 0
             };
         }
         
@@ -139,6 +221,12 @@ io.on("connection", (socket) => {
             whiteUsername: room.whiteUsername,
             blackUsername: room.blackUsername
         });
+        io.to(roomID).emit("playersHQ", {
+            hqwsquare:room.hqwsquare,
+            hqbsquare:room.hqbsquare,
+            hqwstatus:room.hqwstatus,
+            hqbstatus:room.hqbstatus
+        });
     });
 
     socket.on("joinRoom", ({roomID, username}) => {
@@ -154,7 +242,11 @@ io.on("connection", (socket) => {
                 boardState: boardString,
                 spectators: [],
                 playerMessages: [], // Messages between white and black players
-                spectatorMessages: [] // Messages among spectators
+                spectatorMessages: [], // Messages among spectators
+                hqwsquare: null, 
+                hqbsquare: null, 
+                hqwstatus: 0, 
+                hqbstatus: 0
             };
         }
         
@@ -203,6 +295,12 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("playersInfo", {
             whiteUsername: room.whiteUsername,
             blackUsername: room.blackUsername
+        });
+        io.to(roomID).emit("playersHQ", {
+            hqwsquare:room.hqwsquare,
+            hqbsquare:room.hqbsquare,
+            hqwstatus:room.hqwstatus,
+            hqbstatus:room.hqbstatus
         });
     });
 
@@ -256,6 +354,12 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("playersInfo", {
             whiteUsername: room.whiteUsername,
             blackUsername: room.blackUsername
+        });
+        io.to(roomID).emit("playersHQ", {
+            hqwsquare:room.hqwsquare,
+            hqbsquare:room.hqbsquare,
+            hqwstatus:room.hqwstatus,
+            hqbstatus:room.hqbstatus
         });
     });
 
@@ -321,6 +425,12 @@ io.on("connection", (socket) => {
                 whiteUsername: null,
                 blackUsername: room.blackUsername
             });
+            io.to(roomID).emit("playersHQ", {
+                hqwsquare:room.hqwsquare,
+                hqbsquare:room.hqbsquare,
+                hqwstatus:room.hqwstatus,
+                hqbstatus:room.hqbstatus
+            });
         } else if (room.black === socket.id) {
             room.black = null;
             room.blackUsername = null;
@@ -331,6 +441,12 @@ io.on("connection", (socket) => {
             io.to(roomID).emit("playersInfo", {
                 whiteUsername: room.whiteUsername,
                 blackUsername: null
+            });
+            io.to(roomID).emit("playersHQ", {
+                hqwsquare:room.hqwsquare,
+                hqbsquare:room.hqbsquare,
+                hqwstatus:room.hqwstatus,
+                hqbstatus:room.hqbstatus
             });
         } else {
             // Remove from spectators

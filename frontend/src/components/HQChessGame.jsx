@@ -8,6 +8,7 @@ import RoomCard from './Room';
 import { useNavigate } from 'react-router-dom';
 import ChatBox from './chat';
 import PlayerInfo from './username';
+import HQChessBoardWithValidation from './HQChessBoardWithValidation';
 
 const socket = io("http://localhost:8080");
 
@@ -31,11 +32,12 @@ function HQChessGame() {
   const [usernameInput, setUsernameInput] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [hiddenQueenSelectionPhase, setHiddenQueenSelectionPhase] = useState(false);
-  // NEW: State for tracking the hidden queen's square.
-  const [hiddenQueenSquare, setHiddenQueenSquare] = useState(null);
-const updateHiddenQueenSquare = (newSquare) => {
-  setHiddenQueenSquare(newSquare);
-};
+  const [hqwsquare, setHqwsquare] = useState(null);
+  const [hqbsquare, setHqbsquare] = useState(null);
+  const [hqwstatus, setHqwstatus] = useState(0);
+  const [hqbstatus, setHqbstatus] = useState(0);
+  const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus,};
+
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
     const savedRole = localStorage.getItem('playerRole');
@@ -84,6 +86,13 @@ const updateHiddenQueenSquare = (newSquare) => {
       if (info.blackUsername) setBlackUsername(info.blackUsername);
     });
 
+    socket.on("playersHQ",(info)=>{
+      if(info.hqwsquare) setHqwsquare(info.hqwsquare)
+      if(info.hqbsquare) setHqbsquare(info.hqbsquare)
+      if(info.hqwstatus) setHqwstatus(info.hqwstatus)
+      if(info.hqbstatus) setHqbstatus(info.hqbstatus)
+    })
+
     return () => {
       socket.off("playerRole");
       socket.off("boardState");
@@ -91,6 +100,7 @@ const updateHiddenQueenSquare = (newSquare) => {
       socket.off("gameOver");
       socket.off("opponentResigned");
       socket.off("playersInfo");
+      socket.off("playersHQ")
     };
   }, []);
 
@@ -187,10 +197,7 @@ const updateHiddenQueenSquare = (newSquare) => {
     // For white, hidden queen pawn is on rank 2; for black, rank 7.
     let rank = playerRole === 'w' ? "2" : "7";
     const selectedSquare = file + rank;
-    
-    // Save the square for custom rendering.
-    setHiddenQueenSquare(selectedSquare);
-    
+        
     // Optionally, emit the event to the backend
     socket.emit("changeToQueen", { roomID, index: col, isWhite: playerRole === 'w' });
     
@@ -285,6 +292,10 @@ const updateHiddenQueenSquare = (newSquare) => {
                   <p className="mt-4 text-gray-300 font-semibold">Players:</p>
                   <p>White: {whiteUsername || "Waiting for player..."}</p>
                   <p>Black: {blackUsername || "Waiting for player..."}</p>
+                  <p>white:{hqwsquare}</p>
+                  <p>black:{hqbsquare}</p>
+                  <p>white status:{hqwstatus}</p>
+                  <p>black status:{hqbstatus}</p>
                   <p className="mt-4 text-xs text-gray-500">
                     Game statistics and additional controls will appear here in future updates.
                   </p>
@@ -371,14 +382,14 @@ const updateHiddenQueenSquare = (newSquare) => {
                     </div>
                   )}
                   
+
                   <div>
-                    {/* Pass the hiddenQueenSquare prop to the chessboard */}
-                    <ChessBoardWithValidation 
+                    <HQChessBoardWithValidation
                       socket={socket} 
                       roomID={roomID} 
                       playerRole={playerRole} 
                       boardState={boardState}
-                      hiddenQueenSquare={hiddenQueenSquare}
+                      hiddenQueenData={hiddenQueenData}
                     />
                   </div>
                 </div>
