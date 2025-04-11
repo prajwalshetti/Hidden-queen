@@ -1,8 +1,8 @@
-
-
+//@pranav take this and test HQChessBoardWithValidation
 import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
+import { customPieces } from './CustomPieces.jsx';
 
 function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData }) {
     const { hqwsquare, hqbsquare, hqwstatus, hqbstatus, setHqwsquare, setHqbsquare, setHqwstatus, setHqbstatus } = hiddenQueenData;
@@ -85,18 +85,21 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
         }
     }
     
+    // Custom pieces.
     
+    const pieces = customPieces(playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare);
 
     return (
         <div className="flex justify-center items-center">
-            <div style={{ width: "400px", height: "400px" }}>
+            <div style={{ width: "400px", height: "400px" }}>     
                 <Chessboard
                     position={game.fen()}
                     onPieceDrop={onDrop}
                     boardWidth={400}
-                    areArrowsAllowed={true}
                     animationDuration={200}
-                />
+                    boardOrientation={playerRole === "b" ? "black" : "white"}
+                    customPieces={pieces}
+/>
             </div>
         </div>
     );

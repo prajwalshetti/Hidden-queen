@@ -29,6 +29,13 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, hidd
 
             setGame(new Chess(game.fen()));
             socket.emit("move", { move: game.fen(), roomID });
+
+            if (game.isCheckmate()) {
+                socket.emit("checkmated", { roomID, winner: playerRole });
+            } else if (game.isDraw()) {
+                socket.emit("drawGame", { roomID });
+            }
+
             return true;
         } catch (error) {
             return false;
@@ -103,6 +110,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, hidd
                     boardWidth={400}
                     areArrowsAllowed={true}
                     animationDuration={200}
+                    boardOrientation={playerRole === "b" ? "black" : "white"}
                 />
             </div>
         </div>

@@ -159,7 +159,19 @@ io.on("connection", (socket) => {
             hqwstatus: room.hqwstatus,
             hqbstatus: room.hqbstatus,
         });
-    });    
+    });
+
+    // Checkmate handler
+    socket.on("checkmated", ({ roomID, winner }) => {
+        const message = `Checkmate. ${winner === "w" ? "White" : "Black"} wins.`;
+        io.to(roomID).emit("gameOver", message);
+    });
+
+    // Draw handler
+    socket.on("drawGame", ({ roomID }) => {
+        const message = "The game ended in a draw.";
+        io.to(roomID).emit("gameOver", message);
+    });
 
     socket.on("joinRoomBack", ({roomID, savedRole, username}) => {
         console.log(`Player ${socket.id} (${username}) is rejoining room ${roomID}`);
