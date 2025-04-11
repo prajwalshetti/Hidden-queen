@@ -5,7 +5,7 @@ import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 
-function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenSquare }) {
+function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded }) {
     const [game, setGame] = useState(new Chess());
 
     useEffect(() => {
@@ -15,6 +15,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, hidd
     }, [boardState]);
 
     function onDrop(sourceSquare, targetSquare) {
+        if(gameEnded)return;
         if (playerRole !== "w" && playerRole !== "b") return false;
         if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
 

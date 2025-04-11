@@ -9,6 +9,7 @@ import RoomCard from './Room';
 import { useNavigate } from 'react-router-dom';
 import ChatBox from './chat';
 import PlayerInfo from './username';
+import LoadingBoxes from './ui/LoadingBoxes';
 
 const socket = io("http://localhost:8080");
 
@@ -30,6 +31,7 @@ function ChessGame() {
   const [isWhiteTurn, setIsWhiteTurn] = useState(true);
   const [usernameInput, setUsernameInput] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [isDrawRequested, setIsDrawRequested] = useState(false);
 
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
@@ -149,6 +151,14 @@ function ChessGame() {
     setGameEnded(false);
     navigate('/dashboard');
   };
+
+  
+  const handleDrawRequest=()=>{
+    const eventName = isDrawRequested ? "drawReqBack" : "drawReq";
+    socket.emit(eventName, { roomID, color: playerRole });
+
+    setIsDrawRequested(!isDrawRequested);
+  }
   
   const handleTimeUp = (color) => {
     if (!gameEnded) {
@@ -182,7 +192,7 @@ function ChessGame() {
         <div className="flex justify-center mb-6">
           <motion.h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600"
             initial={{ y: -20 }} animate={{ y: 0 }} transition={{ type: "spring", stiffness: 300 }}>
-            Hidden Queen Chess
+            Phantom Chess
           </motion.h1>
         </div>
 
@@ -282,14 +292,22 @@ function ChessGame() {
                     </div>
                     
                     <div className="flex space-x-3">
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && (
+                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername!=="Black Player"&&(
                         <button onClick={confirmResign}
-                          className="bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300">
+                          className="bg-red-700 hover:bg-red-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
                           Resign
                         </button>
                       )}
-                      
-                      {(playerRole === "spectator" || gameEnded) && (
+
+                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && (
+                        <button
+                          onClick={handleDrawRequest}
+                          className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
+                          {isDrawRequested ? "Cancel Draw Req" : "Draw Req"}
+                        </button>
+                      )}
+
+                      {(playerRole === "spectator" || gameEnded || blackUsername==="Black Player") && (
                         <button onClick={handleLeaveRoom}
                           className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300">
                           Leave Room
@@ -318,10 +336,24 @@ function ChessGame() {
                     </div>
                   )}
                   
-                  <div>
-                    <ChessBoardWithValidation socket={socket} roomID={roomID} playerRole={playerRole} 
-                      boardState={boardState} gameEnded={gameEnded} />
-                  </div>
+                  {
+  blackUsername === "Black Player" ? (
+<div className="flex justify-center items-center min-h-[70vh] bg-black">
+  <LoadingBoxes />
+</div>
+  ) : (
+    <div>
+      <ChessBoardWithValidation 
+        socket={socket} 
+        roomID={roomID} 
+        playerRole={playerRole} 
+        boardState={boardState} 
+        gameEnded={gameEnded} 
+      />
+    </div>
+  )
+}
+
                 </div>
                 
                 <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded}

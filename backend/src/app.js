@@ -173,6 +173,34 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("gameOver", message);
     });
 
+    socket.on("drawReq", ({ roomID, color }) => {
+        if (!rooms[roomID]) return;
+        const room = rooms[roomID];
+        if (color === "w") room.drawReq.white = true;
+        else room.drawReq.black = true;
+        const username = color === "w" ? room.whiteUsername : room.blackUsername;
+        const message = { username, text: `${username} has requested a draw.`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), playerRole: color };
+        room.playerMessages.push(message); room.spectatorMessages.push(message);
+        if (room.white) io.to(room.white).emit("chatMessage", message);
+        if (room.black) io.to(room.black).emit("chatMessage", message);
+        room.spectators.forEach(id => io.to(id).emit("chatMessage", message));
+        if (room.drawReq.white && room.drawReq.black) io.to(roomID).emit("gameOver", "The game ended in a draw by mutual agreement.");
+      });
+      
+      socket.on("drawReqBack", ({ roomID, color }) => {
+        if (!rooms[roomID]) return;
+        const room = rooms[roomID];
+        if (color === "w") room.drawReq.white = false;
+        else room.drawReq.black = false;
+        const username = color === "w" ? room.whiteUsername : room.blackUsername;
+        const message = { username, text: `${username} has withdrawn their draw request.`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), playerRole: color };
+        room.playerMessages.push(message); room.spectatorMessages.push(message);
+        if (room.white) io.to(room.white).emit("chatMessage", message);
+        if (room.black) io.to(room.black).emit("chatMessage", message);
+        room.spectators.forEach(id => io.to(id).emit("chatMessage", message));
+      });
+      
+    
     socket.on("joinRoomBack", ({roomID, savedRole, username}) => {
         console.log(`Player ${socket.id} (${username}) is rejoining room ${roomID}`);
 
@@ -190,7 +218,11 @@ io.on("connection", (socket) => {
                 hqwsquare: null, 
                 hqbsquare: null, 
                 hqwstatus: 0, 
-                hqbstatus: 0
+                hqbstatus: 0,
+                drawReq: {
+                    white: false,
+                    black: false
+                }
             };
         }
         
@@ -258,7 +290,11 @@ io.on("connection", (socket) => {
                 hqwsquare: null, 
                 hqbsquare: null, 
                 hqwstatus: 0, 
-                hqbstatus: 0
+                hqbstatus: 0,
+                drawReq: {
+                    white: false,
+                    black: false
+                }
             };
         }
         
