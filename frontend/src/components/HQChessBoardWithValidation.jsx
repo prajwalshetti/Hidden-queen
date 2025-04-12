@@ -1,7 +1,8 @@
 //@pranav take this and test HQChessBoardWithValidation
 import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
-import { Chess } from "chess.js";
+// In a backend script, for instance backend/index.mjs:
+import { Chess } from '../../../lib/chess.js';
 import { customPieces } from './CustomPieces.jsx';
 
 function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData }) {
