@@ -69,11 +69,8 @@ function ChessGame() {
     socket.on("gameOver", (msg) => {
       setMessage(msg);
       setGameEnded(true);
-    });
-
-    socket.on("opponentResigned", (msg) => {
-      setMessage(msg);
-      setGameEnded(true);
+      localStorage.removeItem('roomID');
+      localStorage.removeItem('playerRole');
     });
     
     socket.on("playersInfo", (info) => {
@@ -86,7 +83,6 @@ function ChessGame() {
       socket.off("boardState");
       socket.off("move");
       socket.off("gameOver");
-      socket.off("opponentResigned");
       socket.off("playersInfo");
     };
   }, []);
@@ -292,14 +288,14 @@ function ChessGame() {
                     </div>
                     
                     <div className="flex space-x-3">
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername!=="Black Player"&&(
+                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername!=="Black Player"&& whiteUsername!=="White Player" &&(
                         <button onClick={confirmResign}
                           className="bg-red-700 hover:bg-red-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
                           Resign
                         </button>
                       )}
 
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && (
+                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername!=="White Player" && (
                         <button
                           onClick={handleDrawRequest}
                           className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
@@ -307,7 +303,7 @@ function ChessGame() {
                         </button>
                       )}
 
-                      {(playerRole === "spectator" || gameEnded || blackUsername==="Black Player") && (
+                      {(playerRole === "spectator" || gameEnded || blackUsername==="Black Player"|| whiteUsername==="White Player") && (
                         <button onClick={handleLeaveRoom}
                           className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300">
                           Leave Room
@@ -337,7 +333,7 @@ function ChessGame() {
                   )}
                   
                   {
-  blackUsername === "Black Player" ? (
+  (blackUsername === "Black Player" || whiteUsername=="White Player" ) ? (
 <div className="flex justify-center items-center min-h-[70vh] bg-black">
   <LoadingBoxes />
 </div>

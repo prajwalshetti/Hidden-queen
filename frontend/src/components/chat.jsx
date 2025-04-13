@@ -36,9 +36,9 @@ const ChatBox = ({ socket, roomID, username, playerRole }) => {
   }, [socket, username]);
 
   // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

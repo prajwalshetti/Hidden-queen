@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import ChatBox from './chat';
 import PlayerInfo from './username';
 import HQChessBoardWithValidation from './HQChessBoardWithValidation';
+import LoadingBoxes from './ui/LoadingBoxes';
 
 const socket = io("http://localhost:8080");
 
@@ -36,6 +37,7 @@ function HQChessGame() {
   const [hqbsquare, setHqbsquare] = useState(null);
   const [hqwstatus, setHqwstatus] = useState(0);
   const [hqbstatus, setHqbstatus] = useState(0);
+  const [isDrawRequested, setIsDrawRequested] = useState(false);
   const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus,};
 
   useEffect(() => {
@@ -74,11 +76,8 @@ function HQChessGame() {
     socket.on("gameOver", (msg) => {
       setMessage(msg);
       setGameEnded(true);
-    });
-
-    socket.on("opponentResigned", (msg) => {
-      setMessage(msg);
-      setGameEnded(true);
+      localStorage.removeItem('roomID');
+      localStorage.removeItem('playerRole');
     });
     
     socket.on("playersInfo", (info) => {
@@ -98,7 +97,6 @@ function HQChessGame() {
       socket.off("boardState");
       socket.off("move");
       socket.off("gameOver");
-      socket.off("opponentResigned");
       socket.off("playersInfo");
       socket.off("playersHQ")
     };
@@ -165,6 +163,13 @@ function HQChessGame() {
     setGameEnded(false);
     navigate('/dashboard');
   };
+
+  const handleDrawRequest=()=>{
+    const eventName = isDrawRequested ? "drawReqBack" : "drawReq";
+    socket.emit(eventName, { roomID, color: playerRole });
+
+    setIsDrawRequested(!isDrawRequested);
+  }
   
   const handleTimeUp = (color) => {
     if (!gameEnded) {
@@ -316,14 +321,22 @@ function HQChessGame() {
                     </div>
                     
                     <div className="flex space-x-3">
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && (
+                    {playerRole !== "spectator" && !gameEnded && !isResigning && hqbsquare!==null&& hqwsquare!==null &&(
                         <button onClick={confirmResign}
-                          className="bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300">
+                          className="bg-red-700 hover:bg-red-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
                           Resign
                         </button>
                       )}
-                      
-                      {(playerRole === "spectator" || gameEnded) && (
+
+                      {playerRole !== "spectator" && !gameEnded && !isResigning && hqbsquare!==null&& hqwsquare!==null &&(
+                        <button
+                          onClick={handleDrawRequest}
+                          className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
+                          {isDrawRequested ? "Cancel Draw Req" : "Draw Req"}
+                        </button>
+                      )}
+
+                      {(playerRole === "spectator" || gameEnded || hqbsquare===null || hqwsquare===null) && (
                         <button onClick={handleLeaveRoom}
                           className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300">
                           Leave Room
@@ -383,15 +396,24 @@ function HQChessGame() {
                   )}
                   
 
-                  <div>
-                    <HQChessBoardWithValidation
-                      socket={socket} 
-                      roomID={roomID} 
-                      playerRole={playerRole} 
-                      boardState={boardState}
-                      hiddenQueenData={hiddenQueenData}
-                    />
-                  </div>
+                  {(hqwsquare === null || hqbsquare === null) ? (
+  // 🔄 Waiting screen
+  <div className="flex flex-col justify-center items-center min-h-[70vh] bg-black text-white space-y-4">
+    <LoadingBoxes />
+  </div>
+) : (
+  // ♟️ Show Chessboard
+  <div>
+    <HQChessBoardWithValidation
+      socket={socket}
+      roomID={roomID}
+      playerRole={playerRole}
+      boardState={boardState}
+      hiddenQueenData={hiddenQueenData}
+    />
+  </div>
+)}
+
                 </div>
                 
                 <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded}

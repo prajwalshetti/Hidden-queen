@@ -99,6 +99,12 @@ io.on("connection", (socket) => {
         room.boardState = updateBoardStateToQueen(room.boardState, index, isWhite);
         changeToQueen(roomID, isWhite, index)
         io.to(roomID).emit("boardState", room.boardState);
+                io.to(roomID).emit("playersHQ", {
+            hqwsquare: room.hqwsquare,
+            hqbsquare: room.hqbsquare,
+            hqwstatus: room.hqwstatus,
+            hqbstatus: room.hqbstatus
+        });
     });    
 
     socket.on("revealHQ", ({ roomID, color }) => {
@@ -206,24 +212,7 @@ io.on("connection", (socket) => {
 
         // Create room if it doesn't exist
         if (!rooms[roomID]) {
-            rooms[roomID] = {
-                white: null,
-                black: null,
-                whiteUsername: null,
-                blackUsername: null,
-                boardState: boardString,
-                spectators: [],
-                playerMessages: [], // Messages between white and black players
-                spectatorMessages: [], // Messages among spectators
-                hqwsquare: null, 
-                hqbsquare: null, 
-                hqwstatus: 0, 
-                hqbstatus: 0,
-                drawReq: {
-                    white: false,
-                    black: false
-                }
-            };
+            return false;
         }
         
         // Check if this socket is reconnecting
@@ -433,7 +422,7 @@ io.on("connection", (socket) => {
             
             // Send message to the opponent about the resignation
             if (black) {
-                io.to(black).emit("opponentResigned", "White resigned. You win!");
+                io.to(black).emit("gameOver", "White resigned. You win!");
             }
             
             // Inform spectators
@@ -446,7 +435,7 @@ io.on("connection", (socket) => {
             
             // Send message to the opponent about the resignation
             if (white) {
-                io.to(white).emit("opponentResigned", "Black resigned. You win!");
+                io.to(white).emit("gameOver", "Black resigned. You win!");
             }
             
             // Inform spectators

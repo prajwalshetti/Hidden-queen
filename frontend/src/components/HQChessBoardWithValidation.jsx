@@ -80,6 +80,13 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     
             setGame(new Chess(game.fen()));
             socket.emit("move", { move: game.fen(), roomID });
+
+            if (game.isCheckmate()) {
+                socket.emit("checkmated", { roomID, winner: playerRole });
+            } else if (game.isDraw()) {
+                socket.emit("drawGame", { roomID });
+            }
+            
             return true;
         } catch (error) {
             return false;
@@ -97,7 +104,7 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                     position={game.fen()}
                     onPieceDrop={onDrop}
                     boardWidth={400}
-                    animationDuration={200}
+                    animationDuration={0}
                     boardOrientation={playerRole === "b" ? "black" : "white"}
                     customPieces={pieces}
 />
