@@ -8,7 +8,6 @@ import Home from "./components/Home";
 import ChessGame from "./components/ChessGame";
 import About from "./components/About";
 import Rules from "./components/Rules";
-import Test1 from './components/test1';
 import HQChessGame from './components/HQChessGame';
 
 function App() {
@@ -19,7 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/chessGame" element={<ChessGame />} />
         <Route path="/hqchessGame" element={<HQChessGame />} />
-        <Route path="/test1" element={<Test1 />} />
+        
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Home />} />
           <Route path="rules" element={<Rules />} /> 

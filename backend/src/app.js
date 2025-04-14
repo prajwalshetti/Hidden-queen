@@ -167,6 +167,35 @@ io.on("connection", (socket) => {
         });
     });
 
+    // Time events
+    socket.on("updateTime", ({ roomID, whiteTime, blackTime, lastMoveTime }) => {
+        if (!rooms[roomID]) return;
+        
+        const room = rooms[roomID];
+        room.whiteTime = whiteTime;
+        room.blackTime = blackTime;
+        room.lastMoveTime = lastMoveTime;
+        
+        // Broadcast updated time to all clients in the room
+        io.to(roomID).emit("timeUpdate", {
+            whiteTime,
+            blackTime,
+            lastMoveTime
+        });
+    });
+
+    socket.on("requestTimeSync", ({ roomID }) => {
+        if (!rooms[roomID]) return;
+        
+        const room = rooms[roomID];
+        socket.emit("timeSync", {
+            whiteTime: room.whiteTime,
+            blackTime: room.blackTime,
+            lastMoveTime: room.lastMoveTime,
+            currentTurn: room.boardState.split(" ")[1]
+        });
+    });
+
     // Checkmate handler
     socket.on("checkmated", ({ roomID, winner }) => {
         const message = `Checkmate. ${winner === "w" ? "White" : "Black"} wins.`;
@@ -242,6 +271,14 @@ io.on("connection", (socket) => {
         socket.emit("playerRole", role);
         socket.emit("boardState", room.boardState);
         
+        // Send time data
+        socket.emit("timeSync", {
+            whiteTime: room.whiteTime,
+            blackTime: room.blackTime,
+            lastMoveTime: room.lastMoveTime,
+            currentTurn: room.boardState.split(" ")[1]
+        });
+        
         // Send chat history based on role
         if (role === 'w' || role === 'b') {
             socket.emit("chatHistory", room.playerMessages);
@@ -283,7 +320,11 @@ io.on("connection", (socket) => {
                 drawReq: {
                     white: false,
                     black: false
-                }
+                },
+                // Adding clock properties
+                whiteTime: 600, // 10 minutes in seconds
+                blackTime: 600,
+                lastMoveTime: Date.now() // Track when the last move was made
             };
         }
         
@@ -320,6 +361,14 @@ io.on("connection", (socket) => {
         socket.join(roomID);
         socket.emit("playerRole", role);
         socket.emit("boardState", room.boardState);
+        
+        // Send time data
+        socket.emit("timeSync", {
+            whiteTime: room.whiteTime,
+            blackTime: room.blackTime,
+            lastMoveTime: room.lastMoveTime,
+            currentTurn: room.boardState.split(" ")[1]
+        });
         
         // Send chat history based on role
         if (role === 'w' || role === 'b') {
@@ -403,13 +452,35 @@ io.on("connection", (socket) => {
     socket.on("move", ({ move, roomID }) => {
         if (!rooms[roomID]) return;
 
-        const { white, black } = rooms[roomID];
+        const room = rooms[roomID];
+        const { white, black } = room;
         const playerRole = socket.id === white ? "w" : socket.id === black ? "b" : "spectator";
 
         if (playerRole === "spectator") return;
 
-        rooms[roomID].boardState = move;
+        // Update board state
+        room.boardState = move;
+        
+        // Update last move time
+        room.lastMoveTime = Date.now();
+        
+        // Broadcast move to all clients
         io.to(roomID).emit("move", move);
+        
+        // Send updated time info
+        io.to(roomID).emit("timeUpdate", {
+            whiteTime: room.whiteTime,
+            blackTime: room.blackTime,
+            lastMoveTime: room.lastMoveTime
+        });
+    });
+
+    socket.on("timeOut", ({ roomID, color }) => {
+        if (!rooms[roomID]) return;
+        
+        const winner = color === 'w' ? 'Black' : 'White';
+        const message = `Time's up! ${winner} wins by timeout.`;
+        io.to(roomID).emit("gameOver", message);
     });
 
     socket.on("resign", ({ roomID }) => {

@@ -1,6 +1,4 @@
-//06-04-2025
-//prajwal
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChessBoardWithValidation from './ChessBoardWithValidation';
 import { io } from "socket.io-client";
@@ -32,6 +30,71 @@ function ChessGame() {
   const [usernameInput, setUsernameInput] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [isDrawRequested, setIsDrawRequested] = useState(false);
+  
+  // Clock references and state
+  const clockInterval = useRef(null);
+  const lastTickTime = useRef(Date.now());
+  const [lastMoveTime, setLastMoveTime] = useState(null);
+
+  // Effect for handling the game clock
+  useEffect(() => {
+    // Clean up any existing interval
+    if (clockInterval.current) {
+      clearInterval(clockInterval.current);
+      clockInterval.current = null;
+    }
+
+    // Only start the clock if the game has started and not ended
+    if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player") {
+      clockInterval.current = setInterval(() => {
+        const now = Date.now();
+        const elapsed = (now - lastTickTime.current) / 1000; // Convert to seconds
+        lastTickTime.current = now;
+
+        if (isWhiteTurn) {
+          setWhiteTime(prevTime => {
+            const newTime = Math.max(0, prevTime - elapsed);
+            // Emit time update to keep server in sync
+            socket.emit("updateTime", {
+              roomID,
+              whiteTime: newTime,
+              blackTime,
+              lastMoveTime: now
+            });
+            
+            if (newTime <= 0 && !gameEnded) {
+              handleTimeUp('white');
+            }
+            
+            return newTime;
+          });
+        } else {
+          setBlackTime(prevTime => {
+            const newTime = Math.max(0, prevTime - elapsed);
+            // Emit time update to keep server in sync
+            socket.emit("updateTime", {
+              roomID,
+              whiteTime,
+              blackTime: newTime,
+              lastMoveTime: now
+            });
+            
+            if (newTime <= 0 && !gameEnded) {
+              handleTimeUp('black');
+            }
+            
+            return newTime;
+          });
+        }
+      }, 100); // Update every 100ms for smoother countdown
+    }
+
+    return () => {
+      if (clockInterval.current) {
+        clearInterval(clockInterval.current);
+      }
+    };
+  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername]);
 
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
@@ -49,6 +112,9 @@ function ChessGame() {
         savedRole, 
         username: savedUsername || "Player"
       });
+      
+      // Request time sync when rejoining a room
+      socket.emit("requestTimeSync", { roomID: savedRoomID });
     }
     
     socket.on("playerRole", (role) => {
@@ -64,6 +130,8 @@ function ChessGame() {
     socket.on("move", (move) => {
       setBoardState(move);
       setIsWhiteTurn(move.split(" ")[1] === "w");
+      // Reset last tick time on move to prevent time skips
+      lastTickTime.current = Date.now();
     });
     
     socket.on("gameOver", (msg) => {
@@ -77,6 +145,26 @@ function ChessGame() {
       if (info.whiteUsername) setWhiteUsername(info.whiteUsername);
       if (info.blackUsername) setBlackUsername(info.blackUsername);
     });
+    
+    // New listeners for time synchronization
+    socket.on("timeSync", (timeData) => {
+      setWhiteTime(timeData.whiteTime);
+      setBlackTime(timeData.blackTime);
+      setLastMoveTime(timeData.lastMoveTime);
+      setIsWhiteTurn(timeData.currentTurn === "w");
+      
+      // Reset the tick timer to prevent jumps
+      lastTickTime.current = Date.now();
+    });
+    
+    socket.on("timeUpdate", (timeData) => {
+      setWhiteTime(timeData.whiteTime);
+      setBlackTime(timeData.blackTime);
+      setLastMoveTime(timeData.lastMoveTime);
+      
+      // Reset the tick timer to prevent jumps
+      lastTickTime.current = Date.now();
+    });
 
     return () => {
       socket.off("playerRole");
@@ -84,6 +172,8 @@ function ChessGame() {
       socket.off("move");
       socket.off("gameOver");
       socket.off("playersInfo");
+      socket.off("timeSync");
+      socket.off("timeUpdate");
     };
   }, []);
 
@@ -107,6 +197,9 @@ function ChessGame() {
     socket.emit("joinRoom", { roomID, username });
     setGameStarted(true);
     localStorage.setItem('roomID', roomID);
+    
+    // Request time sync when joining a room
+    socket.emit("requestTimeSync", { roomID });
   };
   
   const handleUsernameSubmit = (e) => {
@@ -145,11 +238,15 @@ function ChessGame() {
     setBoardState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     setMessage("");
     setGameEnded(false);
+    
+    // Reset clock
+    setWhiteTime(600);
+    setBlackTime(600);
+    
     navigate('/dashboard');
   };
 
-  
-  const handleDrawRequest=()=>{
+  const handleDrawRequest = () => {
     const eventName = isDrawRequested ? "drawReqBack" : "drawReq";
     socket.emit(eventName, { roomID, color: playerRole });
 
@@ -161,7 +258,7 @@ function ChessGame() {
       const winner = color === 'white' ? 'Black' : 'White';
       setMessage(`Time's up! ${winner} wins by timeout.`);
       setGameEnded(true);
-      socket.emit("timeUp", { roomID, loser: color === 'white' ? 'w' : 'b' });
+      socket.emit("timeOut", { roomID, color: color === 'white' ? 'w' : 'b' });
     }
   };
 
@@ -181,6 +278,13 @@ function ChessGame() {
   };
 
   const chatInfo = getChatInfo();
+
+  // Format time for display (convert seconds to mm:ss format)
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
@@ -268,6 +372,13 @@ function ChessGame() {
                   <p className="mt-4 text-gray-300 font-semibold">Players:</p>
                   <p>White: {whiteUsername || "Waiting for player..."}</p>
                   <p>Black: {blackUsername || "Waiting for player..."}</p>
+                  
+                  <div className="mt-4 text-gray-300 font-semibold">Time Control:</div>
+                  <div className="flex justify-between mt-2">
+                    <div className="text-white font-mono">White: {formatTime(whiteTime)}</div>
+                    <div className="text-white font-mono">Black: {formatTime(blackTime)}</div>
+                  </div>
+                  
                   <p className="mt-4 text-xs text-gray-500">
                     Game statistics and additional controls will appear here in future updates.
                   </p>
@@ -275,8 +386,16 @@ function ChessGame() {
               </div>
               
               <div className="md:col-span-1 flex flex-col space-y-4">
-                <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded}
-                  timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} />
+                <PlayerInfo 
+                  username={getPlayerName('b')} 
+                  rating={null} 
+                  isActive={!isWhiteTurn && !gameEnded}
+                  timeRemaining={blackTime} 
+                  onTimeUp={() => handleTimeUp('black')} 
+                  playerColor="black" 
+                  isYou={playerRole === 'b'} 
+                  formattedTime={formatTime(blackTime)}
+                />
                 
                 <div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-gray-700">
                   <div className="flex justify-between items-center mb-4">
@@ -288,14 +407,14 @@ function ChessGame() {
                     </div>
                     
                     <div className="flex space-x-3">
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername!=="Black Player"&& whiteUsername!=="White Player" &&(
+                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
                         <button onClick={confirmResign}
                           className="bg-red-700 hover:bg-red-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
                           Resign
                         </button>
                       )}
 
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername!=="White Player" && (
+                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
                         <button
                           onClick={handleDrawRequest}
                           className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
@@ -303,7 +422,7 @@ function ChessGame() {
                         </button>
                       )}
 
-                      {(playerRole === "spectator" || gameEnded || blackUsername==="Black Player"|| whiteUsername==="White Player") && (
+                      {(playerRole === "spectator" || gameEnded || blackUsername === "Black Player" || whiteUsername === "White Player") && (
                         <button onClick={handleLeaveRoom}
                           className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300">
                           Leave Room
@@ -332,28 +451,34 @@ function ChessGame() {
                     </div>
                   )}
                   
-                  {
-  (blackUsername === "Black Player" || whiteUsername=="White Player" ) ? (
-<div className="flex justify-center items-center min-h-[70vh] bg-black">
-  <LoadingBoxes />
-</div>
-  ) : (
-    <div>
-      <ChessBoardWithValidation 
-        socket={socket} 
-        roomID={roomID} 
-        playerRole={playerRole} 
-        boardState={boardState} 
-        gameEnded={gameEnded} 
-      />
-    </div>
-  )
-}
+                  {(blackUsername === "Black Player" || whiteUsername === "White Player") ? (
+                    <div className="flex justify-center items-center min-h-[70vh] bg-black">
+                      <LoadingBoxes />
+                    </div>
+                  ) : (
+                    <div>
+                      <ChessBoardWithValidation 
+                        socket={socket} 
+                        roomID={roomID} 
+                        playerRole={playerRole} 
+                        boardState={boardState} 
+                        gameEnded={gameEnded} 
+                      />
+                    </div>
+                  )}
 
                 </div>
                 
-                <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded}
-                  timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} />
+                <PlayerInfo 
+                  username={getPlayerName('w')} 
+                  rating={null} 
+                  isActive={isWhiteTurn && !gameEnded}
+                  timeRemaining={whiteTime} 
+                  onTimeUp={() => handleTimeUp('white')} 
+                  playerColor="white" 
+                  isYou={playerRole === 'w'} 
+                  formattedTime={formatTime(whiteTime)}
+                />
               </div>
               
               <div className="h-full">

@@ -1,3 +1,5 @@
+
+// PlayerInfo.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import ChessClock from './clock';
@@ -22,7 +24,7 @@ const PlayerInfo = ({ username, rating, isActive, timeRemaining, onTimeUp, playe
       </div>
       <ChessClock 
         isActive={isActive} 
-        startTime={timeRemaining} 
+        timeRemaining={timeRemaining} 
         onTimeUp={onTimeUp} 
         playerColor={playerColor}
       />

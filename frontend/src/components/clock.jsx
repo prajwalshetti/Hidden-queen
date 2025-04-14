@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-const ChessClock = ({ isActive, startTime, onTimeUp, playerColor }) => {
-  const [timeRemaining, setTimeRemaining] = useState(startTime);
-  
+const ChessClock = ({ isActive, timeRemaining, onTimeUp, playerColor }) => {
+  const [displayTime, setDisplayTime] = useState(Math.floor(timeRemaining));
+
+  // Update display time when prop changes (floored)
+  useEffect(() => {
+    setDisplayTime(Math.floor(timeRemaining));
+  }, [timeRemaining]);
+
+  // Timer countdown effect
   useEffect(() => {
     let interval = null;
-    if (isActive && timeRemaining > 0) {
+    if (isActive && displayTime > 0) {
       interval = setInterval(() => {
-        setTimeRemaining(prevTime => {
+        setDisplayTime(prevTime => {
           const newTime = prevTime - 1;
           if (newTime <= 0) {
             clearInterval(interval);
@@ -22,18 +28,20 @@ const ChessClock = ({ isActive, startTime, onTimeUp, playerColor }) => {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [isActive, timeRemaining, onTimeUp]);
+  }, [isActive, displayTime, onTimeUp]);
 
+  // Format seconds into MM:SS
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Dynamic background color based on state
   const getBackgroundColor = () => {
     if (!isActive) return "bg-gray-800";
-    if (timeRemaining < 30) return "bg-red-900";
-    if (timeRemaining < 60) return "bg-amber-900";
+    if (displayTime < 30) return "bg-red-900";
+    if (displayTime < 60) return "bg-amber-900";
     return playerColor === "white" ? "bg-gray-700" : "bg-gray-900";
   };
 
@@ -44,7 +52,7 @@ const ChessClock = ({ isActive, startTime, onTimeUp, playerColor }) => {
       transition={{ type: "spring", stiffness: 200, damping: 15 }}
     >
       <div className="text-center text-2xl font-bold font-mono text-gray-100">
-        {formatTime(timeRemaining)}
+        {formatTime(displayTime)}
       </div>
     </motion.div>
   );
