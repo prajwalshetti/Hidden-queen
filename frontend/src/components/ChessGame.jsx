@@ -48,7 +48,7 @@ function ChessGame() {
     if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player") {
       clockInterval.current = setInterval(() => {
         const now = Date.now();
-        const elapsed = (now - lastTickTime.current) / 1000; // Convert to seconds
+        const elapsed = (now - lastTickTime.current)*1.65 / 1000; // Convert to seconds
         lastTickTime.current = now;
 
         if (isWhiteTurn) {
