@@ -410,6 +410,7 @@ function HQChessGame() {
       playerRole={playerRole}
       boardState={boardState}
       hiddenQueenData={hiddenQueenData}
+      gameEnded={gameEnded}
     />
   </div>
 )}

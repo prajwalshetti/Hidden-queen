@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Chess } from '../../../lib/chess.js';
 import { customPieces } from './CustomPieces.jsx';
 
-function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData }) {
+function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData,gameEnded }) {
     const { hqwsquare, hqbsquare, hqwstatus, hqbstatus, setHqwsquare, setHqbsquare, setHqwstatus, setHqbstatus } = hiddenQueenData;
     const [game, setGame] = useState(new Chess());
 
@@ -38,6 +38,7 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     }
 
     function onDrop(sourceSquare, targetSquare) {
+        if(gameEnded)return;
         if (playerRole !== "w" && playerRole !== "b") return false;
         if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
     
