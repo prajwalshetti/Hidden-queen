@@ -1,4 +1,28 @@
-export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare) => {
+import React, { useState, useEffect, useRef } from 'react';
+export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare,socket) => {
+
+    const [isWhiteKingNull, setIsWhiteKingNull] = useState(false);
+const [isBlackKingNull, setIsBlackKingNull] = useState(false);
+
+// Socket event listener setup for kingNull event - place this in your useEffect or component setup
+useEffect(() => {
+  // Assuming socket is already initialized elsewhere in your code
+  socket.on("kingNull", (color) => {
+    console.log(`King null event received for ${color === "w" ? "white" : "black"}`);
+    
+    if (color === "w") {
+      setIsWhiteKingNull(true);
+    } else {
+      setIsBlackKingNull(true);
+    }
+  });
+  
+  // Clean up listener on component unmount
+  return () => {
+    socket.off("kingNull");
+  };
+}, []);
+
     // Utility function to determine drag opacity
     const getDragOpacity = (pieceColor, isDragging) => {
         if (!isDragging) return 1; // Not being dragged, fully visible
@@ -70,6 +94,8 @@ export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsqu
         
         wK: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
+
+            if(isWhiteKingNull)return null;
             
             return (
                 <img
@@ -175,6 +201,8 @@ export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsqu
         
         bK: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
+
+            if(isBlackKingNull)return null;
             
             return (
                 <img

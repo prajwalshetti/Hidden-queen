@@ -77,6 +77,11 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                     newSquare: targetSquare
                 });
             }
+            console.log(move)
+            if(move&&(move.captured=="k"||move.captured=="K")){
+                handleKingCapture(move);
+                return true;
+            }
     
             setGame(new Chess(game.fen()));
             socket.emit("move", { move: game.fen(), roomID });
@@ -92,10 +97,101 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
             return false;
         }
     }
+
+    function handleKingCapture(move){
+        const from=move.from;
+        const to=move.to;
+        const prevFen=move.before;
+
+        //logic to swap the piece on from and to in prevFen
+        const newFen=swapSquares(from,to,prevFen);
+
+        setGame(new Chess(newFen));
+        socket.emit("move", { move: newFen, roomID });
+
+        socket.emit("kingCaptured", { roomID, winner: playerRole });
+    }
+
+    function swapSquares(square1, square2, fen) {
+        // Parse the FEN string to get the board position part
+        const fenParts = fen.split(" ");
+        const boardPosition = fenParts[0];
+        
+        // Convert algebraic notation to board indices
+        const files = "abcdefgh";
+        const ranks = "87654321";
+        
+        const file1 = files.indexOf(square1[0].toLowerCase());
+        const rank1 = ranks.indexOf(square1[1]);
+        const file2 = files.indexOf(square2[0].toLowerCase());
+        const rank2 = ranks.indexOf(square2[1]);
+        
+        // Validate squares
+        if (file1 === -1 || rank1 === -1 || file2 === -1 || rank2 === -1) {
+            throw new Error("Invalid square notation. Must be in format like 'e4'");
+        }
+        
+        // Parse board into 2D array
+        const board = [];
+        const rows = boardPosition.split("/");
+        
+        for (const row of rows) {
+            const boardRow = [];
+            for (const char of row) {
+                if (isNaN(char)) {
+                    // It's a piece
+                    boardRow.push(char);
+                } else {
+                    // It's a number representing empty squares
+                    const emptyCount = parseInt(char);
+                    for (let i = 0; i < emptyCount; i++) {
+                        boardRow.push("");
+                    }
+                }
+            }
+            board.push(boardRow);
+        }
+        
+        // Swap pieces
+        const temp = board[rank1][file1];
+        board[rank1][file1] = board[rank2][file2];
+        board[rank2][file2] = temp;
+        
+        // Convert back to FEN notation
+        const newRows = [];
+        for (const row of board) {
+            let newRow = "";
+            let emptyCount = 0;
+            
+            for (const square of row) {
+                if (square === "") {
+                    emptyCount++;
+                } else {
+                    if (emptyCount > 0) {
+                        newRow += emptyCount;
+                        emptyCount = 0;
+                    }
+                    newRow += square;
+                }
+            }
+            
+            if (emptyCount > 0) {
+                newRow += emptyCount;
+            }
+            
+            newRows.push(newRow);
+        }
+        
+        // Replace the board position part in the FEN
+        fenParts[0] = newRows.join("/");
+        
+        // Return the complete FEN string
+        return fenParts.join(" ");
+    }
     
     // Custom pieces.
     
-    const pieces = customPieces(playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare);
+    const pieces = customPieces(playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare,socket);
 
     return (
         <div className="flex justify-center items-center">

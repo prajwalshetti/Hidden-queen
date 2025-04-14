@@ -196,6 +196,16 @@ io.on("connection", (socket) => {
         });
     });
 
+    socket.on("kingCaptured", ({ roomID, winner }) => {
+        const message = `King Captured. ${winner === "w" ? "White" : "Black"} wins.`;
+        io.to(roomID).emit("gameOver", message);
+
+        if(winner==="w")
+        io.to(roomID).emit("kingNull","b");
+        else
+        io.to(roomID).emit("kingNull","w");
+    });
+
     // Checkmate handler
     socket.on("checkmated", ({ roomID, winner }) => {
         const message = `Checkmate. ${winner === "w" ? "White" : "Black"} wins.`;
