@@ -36,6 +36,8 @@ function HQChessGame() {
   const [hqwstatus, setHqwstatus] = useState(0);
   const [hqbstatus, setHqbstatus] = useState(0);
   const [isDrawRequested, setIsDrawRequested] = useState(false);
+  const [roomIDSuffix,setRoomIDSuffix]=useState("_HQ")
+  const [boardOrientation,setBoardOrientation]=useState("white-below")
   const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus};
 
   // Clock references and state
@@ -55,7 +57,7 @@ function HQChessGame() {
     if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player" && hqwsquare !== null && hqbsquare !== null) {
       clockInterval.current = setInterval(() => {
         const now = Date.now();
-        const elapsed = (now - lastTickTime.current)*1.65 / 1000; // Convert to seconds
+        const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
         lastTickTime.current = now;
 
         if (isWhiteTurn) {
@@ -299,6 +301,12 @@ function HQChessGame() {
     }
   };
 
+  const toggleBoardOrientation = () => {
+    setBoardOrientation((prev) =>
+      prev === "white-below" ? "black-below" : "white-below"
+    );
+  };  
+
   // Handle hidden queen selection
   const handleHiddenQueenSelection = (col) => {
     console.log("The pawn is selected on the column", col);
@@ -381,8 +389,9 @@ function HQChessGame() {
                   </p>
                 )}
               </div>
+
               
-              <RoomCard joinRoom={joinRoom} />
+              <RoomCard joinRoom={joinRoom} roomIDSuffix={roomIDSuffix} />
               
               <div className="mt-4">
                 <button onClick={() => setShowRules(!showRules)} 
@@ -434,16 +443,11 @@ function HQChessGame() {
               </div>
               
               <div className="md:col-span-1 flex flex-col space-y-4">
-                <PlayerInfo 
-                  username={getPlayerName('b')} 
-                  rating={null} 
-                  isActive={!isWhiteTurn && !gameEnded}
-                  timeRemaining={blackTime} 
-                  onTimeUp={() => handleTimeUp('black')} 
-                  playerColor="black" 
-                  isYou={playerRole === 'b'} 
-                  formattedTime={formatTime(blackTime)}
-                />
+              {(playerRole==="b"||boardOrientation === "black-below") ? (
+                <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
+                  ) : (
+                <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
+              )}
                 
                 <div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-gray-700">
                   <div className="flex justify-between items-center mb-4">
@@ -476,6 +480,15 @@ function HQChessGame() {
                           Leave Room
                         </button>
                       )}
+
+                    {playerRole === "spectator" && (
+                      <button
+                        onClick={toggleBoardOrientation}
+                        className="px-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300"
+                      >
+                        Flip Board
+                      </button>
+                    )}
                     </div>
                   </div>
 
@@ -542,21 +555,17 @@ function HQChessGame() {
                         boardState={boardState}
                         hiddenQueenData={hiddenQueenData}
                         gameEnded={gameEnded}
+                        boardOrientation={boardOrientation}
                       />
                     </div>
                   )}
                 </div>
                 
-                <PlayerInfo 
-                  username={getPlayerName('w')} 
-                  rating={null} 
-                  isActive={isWhiteTurn && !gameEnded}
-                  timeRemaining={whiteTime} 
-                  onTimeUp={() => handleTimeUp('white')} 
-                  playerColor="white" 
-                  isYou={playerRole === 'w'} 
-                  formattedTime={formatTime(whiteTime)}
-                />
+                {(playerRole==="b"||boardOrientation === "black-below") ? (
+                  <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
+                  ) : (
+                  <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
+                )}
               </div>
               
               <div className="h-full">

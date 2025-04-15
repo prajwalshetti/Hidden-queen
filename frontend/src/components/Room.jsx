@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-function RoomCard({ joinRoom }) {
+function RoomCard({ joinRoom,roomIDSuffix }) {
   const [roomID, setRoomID] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
@@ -11,7 +11,7 @@ function RoomCard({ joinRoom }) {
       alert("Enter a valid room ID");
       return;
     }
-    joinRoom(roomID);
+    joinRoom(roomID+roomIDSuffix);
   };
 
   return (

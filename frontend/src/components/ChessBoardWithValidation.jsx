@@ -5,7 +5,7 @@ import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 
-function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded }) {
+function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation }) {
     const [game, setGame] = useState(new Chess());
 
     useEffect(() => {
@@ -111,7 +111,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
                     boardWidth={400}
                     areArrowsAllowed={true}
                     animationDuration={200}
-                    boardOrientation={playerRole === "b" ? "black" : "white"}
+                    boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
                 />
             </div>
         </div>
