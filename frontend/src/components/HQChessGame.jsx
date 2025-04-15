@@ -182,6 +182,11 @@ function HQChessGame() {
       lastTickTime.current = Date.now();
     });
 
+    socket.on("showMessage", (msg) => {
+      setMessage(msg);
+      setTimeout(() => setMessage(""), 5000);
+    });
+
     return () => {
       socket.off("playerRole");
       socket.off("boardState");
@@ -191,6 +196,7 @@ function HQChessGame() {
       socket.off("playersHQ");
       socket.off("timeSync");
       socket.off("timeUpdate");
+      socket.off("showMessage");
     };
   }, []);
 
@@ -537,7 +543,7 @@ function HQChessGame() {
                   )}
                   
                   {message && (
-                    <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-red-900/50 text-red-200 border-red-700'}`}>
+                      <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>
                       {message}
                     </div>
                   )}
@@ -570,7 +576,7 @@ function HQChessGame() {
               
               <div className="h-full">
                 <ChatBox socket={socket} roomID={roomID} username={username || "Anonymous"} playerRole={playerRole}
-                  chatTitle={chatInfo.title} chatDescription={chatInfo.description} />
+                  chatTitle={chatInfo.title} chatDescription={chatInfo.description}/>
               </div>
             </div>
           )}
