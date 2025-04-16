@@ -34,12 +34,24 @@ useEffect(() => {
         return isPlayerPiece ? 0.5 : 0; // 0.5 opacity for own pieces, 0 for opponent's
     };
 
+    const [backupHqwsquare, setBackupHqwsquare] = useState(hqwsquare);
+    useEffect(() => {
+    const timeoutId = setTimeout(() => {setBackupHqwsquare(hqwsquare);}, 500);
+        return () => clearTimeout(timeoutId);
+    }, [hqwsquare]);
+
+    const [backupHqbsquare, setBackupHqbsquare] = useState(hqbsquare);
+    useEffect(() => {
+    const timeoutId = setTimeout(() => {setBackupHqbsquare(hqbsquare);}, 500);
+        return () => clearTimeout(timeoutId);
+    }, [hqbsquare]);
+
     return {
         // WHITE PIECES
         wQ: ({ squareWidth, isDragging, square }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
             
-            if (hqwstatus === 1 && square === hqwsquare) {
+            if (hqwstatus === 1 && (square === hqwsquare||square===backupHqwsquare)) {
                 if (playerRole === 'w') {
                     // Show hidden queen to white
                     return (
@@ -146,7 +158,7 @@ useEffect(() => {
         bQ: ({ squareWidth, isDragging, square }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
             
-            if (hqbstatus === 1 && square === hqbsquare) {
+            if (hqbstatus === 1 && (square === hqbsquare||square===backupHqbsquare)) {
                 if (playerRole === 'b') {
                     // Show hidden queen to black
                     return (
