@@ -96,7 +96,9 @@ io.on("connection", (socket) => {
             return;
         }
         
-        room.boardState = updateBoardStateToQueen(room.boardState, index, isWhite);
+        if (roomID.endsWith('_HQ')) {
+            room.boardState = updateBoardStateToQueen(room.boardState, index, isWhite);
+        }
         changeToQueen(roomID, isWhite, index)
         io.to(roomID).emit("boardState", room.boardState);
                 io.to(roomID).emit("playersHQ", {
@@ -146,6 +148,8 @@ io.on("connection", (socket) => {
         });
     });    
 
+    
+
     socket.on("captureHQ", ({ roomID, color }) => {
         const room = rooms[roomID];
         if (!room) return;
@@ -166,6 +170,15 @@ io.on("connection", (socket) => {
             hqbstatus: room.hqbstatus,
         });
     });
+
+    socket.on("capturePP", ({ roomID, color }) => {
+        const room = rooms[roomID];
+        if (!room) return;
+        const message = `Poisoned pawn captured. ${color === "w" ? "White" : "Black"} wins.`;
+        io.to(roomID).emit("gameOver", message);
+    });
+
+
 
     // Time events
     socket.on("updateTime", ({ roomID, whiteTime, blackTime, lastMoveTime }) => {

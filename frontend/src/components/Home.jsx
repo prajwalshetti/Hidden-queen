@@ -6,6 +6,8 @@ function Home() {
 
   const handlePlay = (varID) => {
     if(varID=='hidden-queen') navigate('/hqchessGame')
+    else if(varID=='poisoned-pawn') navigate('/ppchessGame')
+      
     else navigate('/chessGame');
   };
 
