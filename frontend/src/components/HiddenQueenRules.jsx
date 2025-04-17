@@ -1,9 +1,9 @@
-// HiddenQueenRules.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
+import { X, AlertTriangle, Target, Shield, Brain } from 'lucide-react';
 import { Card, CardContent } from "./ui/card";
 
-function HiddenQueenRules() {
+function HiddenQueenRules({ onClose }) {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -21,164 +21,133 @@ function HiddenQueenRules() {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
       className="mt-6"
     >
-      <Card className="bg-gradient-to-br from-gray-800 to-gray-900 text-gray-100 rounded-xl shadow-2xl border border-purple-900 overflow-hidden">
-        <CardContent className="p-6">
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-center mb-6"
-          >
-            <div className="relative">
-              <h1 className="text-4xl font-extrabold text-center relative z-10">
-                <span className="text-purple-500">♛</span> 
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
-                  Hidden Queen Rules
-                </span> 
-                <span className="text-purple-500">♛</span>
-              </h1>
-              <motion.div
-                className="absolute inset-0 bg-purple-500/10 blur-xl rounded-full z-0"
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  opacity: [0.7, 0.9, 0.7]
-                }}
-                transition={{ 
-                  duration: 3,
-                  repeat: Infinity,
-                  repeatType: "reverse"
-                }}
-              />
+      <Card className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-700 max-w-2xl mx-auto text-gray-100">
+        <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+          <div className="flex items-center space-x-3">
+            <div className="bg-purple-500 bg-opacity-20 p-2 rounded-lg">
+              <span className="text-purple-400 text-xl font-bold">♛</span>
             </div>
-          </motion.div>
-
-          <motion.p 
-            className="text-xl text-center mb-8 text-gray-300"
-            variants={item}
-            initial="hidden"
-            animate="show"
-          >
-            <span className="text-yellow-300 font-bold">Welcome to Hidden Queen Chess!</span> This is a special version of chess where a <span className="text-purple-400">pawn</span> secretly holds the power of a <span className="text-purple-400">queen</span>!
-            <br /><br />
-            <span className="inline-block bg-gray-800 px-3 py-1 rounded-full">🎩 <strong>Imagine a magic trick!</strong> One of your pawns is actually a <span className="text-purple-400 font-bold">hidden queen</span> in disguise, but <span className="text-yellow-300 font-bold">your opponent doesn't know which one!</span> 🤯</span>
-          </motion.p>
-
-          <motion.div 
-            className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 relative overflow-hidden"
-            variants={item}
-            initial="hidden"
-            animate="show"
-          >
-            <motion.div
-              className="absolute inset-0 bg-purple-900/5"
-              animate={{ 
-                backgroundPosition: ['0% 0%', '100% 100%'],
-              }}
-              transition={{ 
-                duration: 10,
-                repeat: Infinity,
-                repeatType: "mirror"
-              }}
-              style={{
-                backgroundSize: '200% 200%',
-                backgroundImage: 'radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, rgba(0, 0, 0, 0) 70%)'
-              }}
-            />
-
-            <motion.h2 
-              className="text-3xl font-bold text-center mb-6 relative"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+            <h2 className="text-2xl font-bold text-purple-400">Hidden Queen Chess</h2>
+          </div>
+          {onClose && (
+            <button 
+              onClick={onClose} 
+              className="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 p-2 rounded-full transition-colors duration-200"
+              aria-label="Close"
             >
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">
-                How Does It Work? 🧐
-              </span>
-            </motion.h2>
-
-            <motion.ul 
-              className="text-lg space-y-4 relative"
-              variants={container}
-              initial="hidden"
-              animate="show"
-            >
-              <motion.li variants={item} className="flex items-start space-x-3">
-                <span className="text-white text-2xl">♟</span>
-                <span><span className="font-bold text-yellow-400">Choosing Your Hidden Queen:</span> On your first move, <span className="font-bold text-white">double-click one of your pawns</span> to designate it as the Hidden Queen. This choice is permanent!</span>
-              </motion.li>
-              
-              <motion.li variants={item} className="flex items-start space-x-3">
-                <span className="text-blue-400 text-2xl">🕵️</span>
-                <span><span className="font-bold text-yellow-400">Secret Identity:</span> You'll see your chosen pawn as a special piece, but <span className="font-bold text-white">your opponent still sees it as a normal pawn</span> - they won't know which pawn hides your queen!</span>
-              </motion.li>
-              
-              <motion.li variants={item} className="flex items-start space-x-3">
-                <span className="text-white text-2xl">♙</span>
-                <span><span className="font-bold text-yellow-400">Movement Before Reveal:</span> Your Hidden Queen <span className="font-bold text-white">moves like a regular pawn</span> at first and can capture diagonally like normal pawns.</span>
-              </motion.li>
-              
-              <motion.li variants={item} className="flex items-start space-x-3">
-                <span className="text-purple-400 text-2xl">♛</span>
-                <span><span className="font-bold text-yellow-400">The Grand Reveal:</span> When your Hidden Queen makes a non-pawn move (like moving diagonally without capturing or moving backward), it <span className="font-bold text-white">transforms into a visible queen</span> for everyone!</span>
-              </motion.li>
-              
-              <motion.li variants={item} className="flex items-start space-x-3">
-                <span className="text-yellow-400 text-2xl">✨</span>
-                <span><span className="font-bold text-yellow-400">After Revelation:</span> Once revealed, your Hidden Queen <span className="font-bold text-white">behaves exactly like a standard queen</span> with all its powerful moves.</span>
-              </motion.li>
-              
-              <motion.li variants={item} className="flex items-start space-x-3">
-                <span className="text-white text-2xl">♚</span>
-                <span><span className="font-bold text-yellow-400">Winning the Game:</span> Win by checkmate or by capturing your opponent's king, just like in regular chess.</span>
-              </motion.li>
-            </motion.ul>
-          </motion.div>
-
-          <motion.div 
-            className="mt-6 bg-purple-900/20 p-4 rounded-lg border border-purple-800/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-          >
-            <h3 className="text-xl font-bold text-center mb-2 text-purple-300">Strategic Tips 🧠</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start space-x-2">
-                <span className="text-yellow-400">🔮</span>
-                <p className="text-sm text-gray-300">Choose your Hidden Queen carefully! Middle pawns have more movement options.</p>
-              </div>
-              <div className="flex items-start space-x-2">
-                <span className="text-yellow-400">🎭</span>
-                <p className="text-sm text-gray-300">Try to mislead your opponent about which pawn is special.</p>
-              </div>
-              <div className="flex items-start space-x-2">
-                <span className="text-yellow-400">⚡</span>
-                <p className="text-sm text-gray-300">Reveal your Hidden Queen at a strategic moment for maximum surprise.</p>
-              </div>
-              <div className="flex items-start space-x-2">
-                <span className="text-yellow-400">🛡️</span>
-                <p className="text-sm text-gray-300">Protect your Hidden Queen until you're ready to reveal its power!</p>
-              </div>
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+        
+        <div className="space-y-6 text-gray-300">
+          <div className="flex items-start space-x-4">
+            <div className="bg-purple-500 bg-opacity-10 p-2 rounded-lg mt-1">
+              <AlertTriangle className="text-purple-300 w-5 h-5" />
             </div>
-          </motion.div>
-
-          <motion.div
-            className="mt-6 text-center text-gray-300"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-          >
-            <p className="text-lg">
-              <span className="text-yellow-400">🌟</span> This twist makes chess <span className="font-bold text-white">more exciting and unpredictable!</span> <br />
-              <span className="text-yellow-400">🎉</span> Will your Hidden Queen turn the tide of battle? <span className="font-bold text-white">Play now and find out!</span> <span className="text-yellow-400">🏆</span>
+            <p className="text-lg font-medium text-purple-300 leading-relaxed">
+              Hidden Queen Chess transforms standard chess with a single powerful secret: one of your pawns is actually a queen in disguise!
             </p>
-          </motion.div>
-        </CardContent>
+          </div>
+          
+          <div className="bg-gray-800 bg-opacity-50 rounded-xl p-6 border border-gray-700">
+            <h3 className="text-lg font-semibold text-purple-300 mb-4">Core Rules</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center text-purple-300 font-bold">1</div>
+                <p><span className="text-white font-medium">Initial Selection:</span> Before the game begins, each player <span className="text-white font-medium">secretly designates one of their eight pawns</span> as their Hidden Queen.</p>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center text-purple-300 font-bold">2</div>
+                <p><span className="text-white font-medium">Appearance:</span> The Hidden Queen <span className="text-white font-medium">appears as a normal pawn to your opponent</span>, but you'll see it marked with a special indicator.</p>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center text-purple-300 font-bold">3</div>
+                <p><span className="text-white font-medium">Special Movement:</span> Your Hidden Queen can either <span className="text-white font-medium">move like a standard pawn OR make any queen move</span> during your turn.</p>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center text-purple-300 font-bold">4</div>
+                <p><span className="text-white font-medium">Revelation:</span> When your Hidden Queen makes any non-pawn move, it's immediately <span className="text-white font-medium">revealed as a queen</span> to both players and transforms permanently.</p>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center text-purple-300 font-bold">5</div>
+                <p><span className="text-white font-medium">Enpassant:</span> The <span className="text-white font-medium">Enpassant</span> pawn move is not allowed in Hidden Queen Chess.</p>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center text-purple-300 font-bold">6</div>
+                <p><span className="text-white font-medium">Victory Condition:</span> The game is won by <span className="text-white font-medium">capturing the opponent's king</span> (not by checkmate), timeout or resignation by your opponent.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl overflow-hidden">
+            <div className="bg-purple-500 bg-opacity-10 px-6 py-3 border-b border-gray-700">
+              <div className="flex items-center space-x-2">
+                <Brain className="text-purple-300 w-5 h-5" />
+                <h3 className="text-lg font-semibold text-purple-300">Strategic Insights</h3>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-1">
+                  <Target className="text-purple-300 w-4 h-4" />
+                </div>
+                <p><span className="text-white font-medium">Positioning</span> – Edge pawns can surprise with unexpected lateral moves, while central pawns have greater mobility once revealed.</p>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-1">
+                  <Shield className="text-purple-300 w-4 h-4" />
+                </div>
+                <p><span className="text-white font-medium">Deception</span> – Move several pawns similarly to conceal which one is your Hidden Queen, creating uncertainty for your opponent.</p>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-1">
+                  <AlertTriangle className="text-purple-300 w-4 h-4" />
+                </div>
+                <p><span className="text-white font-medium">Timing</span> – Revealing your Hidden Queen creates an immediate tactical advantage, but maintaining the secret can lead to a devastating surprise attack.</p>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-1">
+                  <span className="text-purple-300 text-lg">♛</span>
+                </div>
+                <p><span className="text-white font-medium">King safety</span> – Since kings can be captured directly, maintain stronger defenses around your king than in standard chess.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-purple-900 bg-opacity-20 border border-purple-800 rounded-lg p-4 flex items-center space-x-3">
+            <div className="bg-purple-500 bg-opacity-20 p-2 rounded-full">
+              <span className="text-purple-400 text-xl">✨</span>
+            </div>
+            <p className="text-purple-300 font-medium">
+              Important: Once your Hidden Queen is revealed, it <span className="text-white">cannot revert to appearing as a pawn</span>. Your opponent's king is always in danger - there's no stalemate in this variant!
+            </p>
+          </div>
+          <div className="bg-red-900 bg-opacity-20 border border-red-800 rounded-lg p-4 flex items-center space-x-3">
+                    <div className="bg-red-500 bg-opacity-20 p-2 rounded-full">
+                      <AlertTriangle className="text-red-400 w-5 h-5" />
+                    </div>
+                    <p className="text-red-300 font-medium">
+                      Once chosen, the  hidden queen <span className="text-white">cannot be changed</span> during the game.
+                    </p>
+          </div>
+        </div>
       </Card>
     </motion.div>
   );
