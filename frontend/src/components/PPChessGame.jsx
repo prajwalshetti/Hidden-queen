@@ -508,7 +508,7 @@ function PPChessGame() {
                           Choose which pawn will secretly be your poisoned pawn. It will move like a pawn but if captured by your opponent then you win the game.
                         </p>
                         <div className="grid grid-cols-8 gap-2 mb-4">
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map((col) => (
+                          {(playerRole === "b" ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]).map((col) => (
                             <button
                               key={col}
                               onClick={() => handleHiddenQueenSelection(col)}

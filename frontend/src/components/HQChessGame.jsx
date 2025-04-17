@@ -509,7 +509,7 @@ function HQChessGame() {
                           It will be revealed to your opponent when you make a non-pawn move with it.
                         </p>
                         <div className="grid grid-cols-8 gap-2 mb-4">
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map((col) => (
+                          {(playerRole === "b" ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]).map((col) => (
                             <button
                               key={col}
                               onClick={() => handleHiddenQueenSelection(col)}
@@ -519,6 +519,7 @@ function HQChessGame() {
                             </button>
                           ))}
                         </div>
+
                         <p className="text-sm text-gray-400">
                           {playerRole === 'w' 
                             ? "Your pawns are on the 2nd rank (a2-h2)" 
