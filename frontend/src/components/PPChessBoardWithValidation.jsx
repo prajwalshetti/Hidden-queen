@@ -15,11 +15,14 @@ function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     }, [boardState]);
 
     function onDrop(sourceSquare, targetSquare) {
-        if(gameEnded)return;
+        if(gameEnded) return;
         if (playerRole !== "w" && playerRole !== "b") return false;
         if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
     
         try {
+            // Store board state before the move to detect en passant captures
+            const prevBoard = game.board();
+            
             const move = game.move({
                 from: sourceSquare,
                 to: targetSquare,
@@ -27,16 +30,32 @@ function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
             });
     
             if (move === null) return false;
-
-            //Capture logic
+    
+            // Determine if this was an en passant capture
+            const isEnPassant = move.flags.includes('e');
+            
+            // Capture logic for direct captures
             if (playerRole === "w" && hqbstatus < 3 && targetSquare === hqbsquare) {
                 socket.emit("capturePP", { roomID, color: "b" }); // Opponent's PP
             }
             if (playerRole === "b" && hqwstatus < 3 && targetSquare === hqwsquare) {
                 socket.emit("capturePP", { roomID, color: "w" }); // Opponent's PP
-            }            
-    
-          
+            }
+            
+            // En passant capture logic
+            if (isEnPassant) {
+                // For en passant, the captured pawn is on the same file as the target square
+                // but on the same rank as the source square
+                const capturedPawnSquare = targetSquare[0] + sourceSquare[1];
+                
+                if (playerRole === "w" && hqbstatus < 3 && capturedPawnSquare === hqbsquare) {
+                    socket.emit("capturePP", { roomID, color: "b" }); // Opponent's PP via en passant
+                }
+                if (playerRole === "b" && hqwstatus < 3 && capturedPawnSquare === hqwsquare) {
+                    socket.emit("capturePP", { roomID, color: "w" }); // Opponent's PP via en passant
+                }
+            }
+            
             // Change HQ square if it was a normal move
             const movedHQWhite = playerRole === "w" && hqwstatus < 3 && sourceSquare === hqwsquare;
             const movedHQBlack = playerRole === "b" && hqbstatus < 3 && sourceSquare === hqbsquare;
@@ -48,12 +67,11 @@ function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                     newSquare: targetSquare
                 });
             }
-            console.log(move)
-           
-    
+            console.log(move);
+            
             setGame(new Chess(game.fen()));
             socket.emit("move", { move: game.fen(), roomID });
-
+    
             if (game.isCheckmate()) {
                 socket.emit("checkmated", { roomID, winner: playerRole });
             } else if (game.isDraw()) {
