@@ -15,7 +15,7 @@ function Register() {
     const loginUser = async () => {
         setLoading(true);
         try {
-            const response = await axios.post("http://localhost:8000/api/v1/user/loginuser", {
+            const response = await axios.post("http://localhost:8002/api/v1/user/loginuser", {
                 email,
                 password
             }, { withCredentials: true });
@@ -39,7 +39,7 @@ function Register() {
         setLoading(true);
 
         try {
-            const response = await axios.post("http://localhost:8000/api/v1/user/register", {
+            const response = await axios.post("http://localhost:8002/api/v1/user/register", {
                 username,
                 email,
                 password

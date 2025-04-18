@@ -11,7 +11,7 @@ import LoadingBoxes from './ui/LoadingBoxes';
 import FBChessBoardWithValidation from './FBChessBoardWithValidation';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 
-const socket = io("http://localhost:8080");
+const socket = io("http://localhost:8082");
 
 function FBChessGame() {
   const navigate = useNavigate();

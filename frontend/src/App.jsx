@@ -11,7 +11,7 @@ import Rules from "./components/Rules";
 import HQChessGame from './components/HQChessGame';
 import PPChessGame from './components/PPChessGame';
 import FBChessGame from './components/FBChessGame';
-
+import FeedbackForm from './components/Feedback';
 function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -22,6 +22,7 @@ function App() {
         <Route path="/hqchessGame" element={<HQChessGame />} />
         <Route path="/ppchessGame" element={<PPChessGame />} />
         <Route path="/fbchessgame" element={<FBChessGame />} />
+        <Route path="/feedback" element={<FeedbackForm />} />
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Home />} />
           <Route path="rules" element={<Rules />} /> 

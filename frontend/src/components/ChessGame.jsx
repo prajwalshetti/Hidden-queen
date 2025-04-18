@@ -10,7 +10,7 @@ import PlayerInfo from './username';
 import LoadingBoxes from './ui/LoadingBoxes';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 
-const socket = io("http://localhost:8080");
+const socket = io("http://localhost:8082");
 
 function ChessGame() {
   const navigate = useNavigate();
