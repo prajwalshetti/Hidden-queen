@@ -3,7 +3,7 @@ import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 // In a backend script, for instance backend/index.mjs:
 import { Chess } from 'chess.js';
-import { customPieces } from './CustomPieces.jsx';
+import { CustomPiecesPP } from './CustomPiecesPP.jsx';
 
 function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData,gameEnded, boardOrientation }) {
     const { hqwsquare, hqbsquare, hqwstatus, hqbstatus, setHqwsquare, setHqbsquare, setHqwstatus, setHqbstatus } = hiddenQueenData;
@@ -87,12 +87,13 @@ function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     return (
         <div className="flex justify-center items-center">
             <div style={{ width: "400px", height: "400px" }}>     
-                <Chessboard
-                    position={game.fen()}
-                    onPieceDrop={onDrop}
-                    boardWidth={400}
-                    animationDuration={400}
-                    boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
+            <Chessboard
+  position={game.fen()}
+  onPieceDrop={onDrop}
+  boardWidth={400}
+  animationDuration={400}
+  boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
+  customPieces={CustomPiecesPP(playerRole, hqwsquare, hqbsquare, socket )}
 />
             </div>
         </div>

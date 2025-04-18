@@ -4,6 +4,7 @@
 import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
+import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 
 function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation }) {
     const [game, setGame] = useState(new Chess());
@@ -43,71 +44,13 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
         }
     }
 
-    // Define custom piece rendering for queens.
-    // const customPieces = {
-    //     wQ: ({ squareWidth, isDragging, square }) => {
-    //         if (hiddenQueenSquare === square) {
-    //             return (
-    //                 <img
-    //                     src="https://via.placeholder.com/40?text=HQ" // Dummy image for hidden queen
-    //                     style={{
-    //                         width: squareWidth,
-    //                         height: squareWidth,
-    //                         opacity: isDragging ? 0.5 : 1,
-    //                     }}
-    //                     alt="hidden white queen"
-    //                 />
-    //             );
-    //         }
-    //         // Default white queen image
-    //         return (
-    //             <img
-    //                 src="https://via.placeholder.com/40?text=WQ" // Dummy default queen image
-    //                 style={{
-    //                     width: squareWidth,
-    //                     height: squareWidth,
-    //                     opacity: isDragging ? 0.5 : 1,
-    //                 }}
-    //                 alt="white queen"
-    //             />
-    //         );
-    //     },
-    //     bQ: ({ squareWidth, isDragging, square }) => {
-    //         if (hiddenQueenSquare === square) {
-    //             return (
-    //                 <img
-    //                     src="https://via.placeholder.com/40?text=HQ" // Dummy image for hidden queen (for black)
-    //                     style={{
-    //                         width: squareWidth,
-    //                         height: squareWidth,
-    //                         opacity: isDragging ? 0.5 : 1,
-    //                     }}
-    //                     alt="hidden black queen"
-    //                 />
-    //             );
-    //         }
-    //         // Default black queen image
-    //         return (
-    //             <img
-    //                 src="https://via.placeholder.com/40?text=BQ" // Dummy default queen image
-    //                 style={{
-    //                     width: squareWidth,
-    //                     height: squareWidth,
-    //                     opacity: isDragging ? 0.5 : 1,
-    //                 }}
-    //                 alt="black queen"
-    //             />
-    //         );
-    //     },
-    // };
-
     return (
         <div className="flex justify-center items-center">
             <div style={{ width: "400px", height: "400px" }}>
                 <Chessboard
                     position={game.fen()}
                     onPieceDrop={onDrop}
-                    // customPieces={customPieces}
+                    customPieces={CustomPiecesNF(playerRole, socket)}
                     boardWidth={400}
                     areArrowsAllowed={true}
                     animationDuration={200}

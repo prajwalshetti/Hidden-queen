@@ -4,6 +4,7 @@
 import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
+import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 
 function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation }) {
     const [game, setGame] = useState(new Chess());
@@ -78,6 +79,7 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
                 <Chessboard
                     position={game.fen()}
                     onPieceDrop={onDrop}
+                    customPieces={CustomPiecesNF(playerRole, socket)}
                     boardWidth={400}
                     areArrowsAllowed={true}
                     animationDuration={200}
