@@ -403,7 +403,7 @@ function PPChessGame() {
                 <button onClick={() => setShowRules(!showRules)} 
                   className="bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg border border-gray-700 shadow-lg flex items-center space-x-2 transition-all duration-300 hover:shadow-purple-900/30 hover:shadow-lg">
                   <span className="text-purple-400">{showRules ? "♟" : "♛"}</span>
-                  <span>{showRules ? "Hide Rules" : "Show Hidden Queen Rules"}</span>
+                  <span>{showRules ? "Hide Rules" : "Show Poisoned Pawn Chess Rules"}</span>
                 </button>
                 
                 {showRules && (

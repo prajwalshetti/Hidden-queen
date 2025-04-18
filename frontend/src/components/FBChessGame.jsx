@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChessBoardWithValidation from './ChessBoardWithValidation';
 import { io } from "socket.io-client";
-import PoisonedPawnRules from './PPRules';
+import FootballChessRules from './FBChessRules';
 import RoomCard from './Room';
 import { useNavigate } from 'react-router-dom';
 import ChatBox from './chat';
@@ -367,12 +367,12 @@ function FBChessGame() {
                 <button onClick={() => setShowRules(!showRules)} 
                   className="bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg border border-gray-700 shadow-lg flex items-center space-x-2 transition-all duration-300 hover:shadow-purple-900/30 hover:shadow-lg">
                   <span className="text-purple-400">{showRules ? "♟" : "♛"}</span>
-                  <span>{showRules ? "Hide Rules" : "Show Hidden Queen Rules"}</span>
+                  <span>{showRules ? "Hide Rules" : "Show Football Chess Rules"}</span>
                 </button>
                 
                 {showRules && (
                   <div style={{ transition: "all 0.3s ease", opacity: 1, height: "auto" }}>
-                    <PoisonedPawnRules onClose={() => setShowRules(false)} />
+                    <FootballChessRules onClose={() => setShowRules(false)} />
                   </div>
                 )}
               </div>
