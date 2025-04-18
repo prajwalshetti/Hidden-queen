@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 // In a backend script, for instance backend/index.mjs:
 import { Chess } from 'chess.js';
 import { CustomPiecesPP } from './CustomPiecesPP.jsx';
+import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 
 function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData,gameEnded, boardOrientation }) {
     const { hqwsquare, hqbsquare, hqwstatus, hqbstatus, setHqwsquare, setHqbsquare, setHqwstatus, setHqbstatus } = hiddenQueenData;
     const [game, setGame] = useState(new Chess());
+    const { pieceTheme, setPieceTheme } = usePieceTheme();
 
     useEffect(() => {
         game.load(boardState);
@@ -151,7 +153,7 @@ function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
   boardWidth={400}
   animationDuration={400}
   boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
-  customPieces={CustomPiecesPP(playerRole, hqwsquare, hqbsquare, socket )}
+  customPieces={CustomPiecesPP(playerRole, hqwsquare, hqbsquare, socket,pieceTheme )}
 //   customSquareStyles={customSquareStyles}
 />
             </div>

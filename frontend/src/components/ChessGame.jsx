@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import ChatBox from './chat';
 import PlayerInfo from './username';
 import LoadingBoxes from './ui/LoadingBoxes';
+import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 
 const socket = io("http://localhost:8082");
@@ -390,6 +391,7 @@ function ChessGame() {
                   <p className="mt-4 text-xs text-gray-500">
                     Game statistics and additional controls will appear here in future updates.
                   </p>
+                  <div className="p-4"><PieceThemeSelector/></div>
                 </div>
               </div>
               

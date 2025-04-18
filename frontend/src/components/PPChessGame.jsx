@@ -8,6 +8,7 @@ import ChatBox from './chat';
 import PlayerInfo from './username';
 import PPChessBoardWithValidation from './PPChessBoardWithValidation';
 import LoadingBoxes from './ui/LoadingBoxes';
+import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 
 const socket = io("http://localhost:8082");
@@ -451,6 +452,7 @@ function PPChessGame() {
                       )}
                     </div>
                   )}
+                  <div className="p-4"><PieceThemeSelector/></div>
                 </div>
               </div>
               

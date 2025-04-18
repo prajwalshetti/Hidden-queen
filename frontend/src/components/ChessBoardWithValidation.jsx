@@ -5,9 +5,11 @@ import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { CustomPiecesNF } from './CustomPiecesNF.jsx';
+import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 
 function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation }) {
     const [game, setGame] = useState(new Chess());
+    const { pieceTheme, setPieceTheme } = usePieceTheme();
 
     useEffect(() => {
         const newGame = new Chess();
@@ -50,7 +52,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
                 <Chessboard
                     position={game.fen()}
                     onPieceDrop={onDrop}
-                    customPieces={CustomPiecesNF(playerRole, socket)}
+                    customPieces={CustomPiecesNF(playerRole, socket,pieceTheme)}
                     boardWidth={400}
                     areArrowsAllowed={true}
                     animationDuration={200}

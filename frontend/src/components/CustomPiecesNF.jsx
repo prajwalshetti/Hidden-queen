@@ -1,8 +1,7 @@
 import React from 'react';
 
-export const CustomPiecesNF = (playerRole, socket) => {
-    const variant = "alpha"; // you can change this to your folder name if needed
-
+export const CustomPiecesNF = (playerRole, socket,pieceTheme) => {
+    const variant = pieceTheme;
     const getDragOpacity = (pieceColor, isDragging) => {
         if (!isDragging) return 1;
         const isPlayerPiece = (pieceColor === 'w' && playerRole === 'w') || (pieceColor === 'b' && playerRole === 'b');
