@@ -9,6 +9,7 @@ import PlayerInfo from './username';
 import HQChessBoardWithValidation from './HQChessBoardWithValidation';
 import LoadingBoxes from './ui/LoadingBoxes';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
+import PieceThemeSelector from './ui/PieceThemeSelector';
 
 const socket = io("http://localhost:8080");
 
@@ -451,6 +452,7 @@ function HQChessGame() {
                       )}
                     </div>
                   )}
+                <div className="p-4"><PieceThemeSelector/></div>
                 </div>
               </div>
               

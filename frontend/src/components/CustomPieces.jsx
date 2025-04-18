@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare, socket) => {
-    const variant = "anarcandy";
+export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare, socket,pieceTheme) => {
+    const variant = pieceTheme;
 
     const [isWhiteKingNull, setIsWhiteKingNull] = useState(false);
     const [isBlackKingNull, setIsBlackKingNull] = useState(false);
