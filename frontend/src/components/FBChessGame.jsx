@@ -9,6 +9,7 @@ import ChatBox from './chat';
 import PlayerInfo from './username';
 import LoadingBoxes from './ui/LoadingBoxes';
 import FBChessBoardWithValidation from './FBChessBoardWithValidation';
+import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 
 const socket = io("http://localhost:8080");
 
@@ -38,6 +39,8 @@ function FBChessGame() {
   const clockInterval = useRef(null);
   const lastTickTime = useRef(Date.now());
   const [lastMoveTime, setLastMoveTime] = useState(null);
+
+  const validateMode = useValidateChessMode();
 
   // Effect for handling the game clock
   useEffect(() => {
@@ -107,17 +110,20 @@ function FBChessGame() {
     if (savedUsername) setUsername(savedUsername);
     
     if (savedRoomID && savedRole) {
-      setRoomID(savedRoomID);
-      setPlayerRole(savedRole);
-      setGameStarted(true);
-      socket.emit("joinRoomBack", {
-        roomID: savedRoomID, 
-        savedRole, 
-        username: savedUsername || "Player"
-      });
-      
-      // Request time sync when rejoining a room
-      socket.emit("requestTimeSync", { roomID: savedRoomID });
+      const isValidMode = validateMode(); 
+      if (isValidMode) {
+        setRoomID(savedRoomID);
+        setPlayerRole(savedRole);
+        setGameStarted(true);
+        
+        socket.emit("joinRoomBack", {
+          roomID: savedRoomID, 
+          savedRole, 
+          username: savedUsername || "Player"
+        });
+        
+        socket.emit("requestTimeSync", { roomID: savedRoomID });
+      }
     }
     
     socket.on("playerRole", (role) => {
