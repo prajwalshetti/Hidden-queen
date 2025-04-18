@@ -10,6 +10,7 @@ import About from "./components/About";
 import Rules from "./components/Rules";
 import HQChessGame from './components/HQChessGame';
 import PPChessGame from './components/PPChessGame';
+import FBChessGame from './components/FBChessGame';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/chessGame" element={<ChessGame />} />
         <Route path="/hqchessGame" element={<HQChessGame />} />
         <Route path="/ppchessGame" element={<PPChessGame />} />
+        <Route path="/fbchessgame" element={<FBChessGame />} />
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Home />} />
           <Route path="rules" element={<Rules />} /> 

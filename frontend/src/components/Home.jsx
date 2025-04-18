@@ -7,6 +7,7 @@ function Home() {
   const handlePlay = (varID) => {
     if(varID=='hidden-queen') navigate('/hqchessGame')
     else if(varID=='poisoned-pawn') navigate('/ppchessGame')
+    else if(varID=='football-chess') navigate('/fbchessGame')
       
     else navigate('/chessGame');
   };
@@ -21,6 +22,11 @@ function Home() {
       id: 'poisoned-pawn',
       name: 'Poisoned Pawn',
       imagePath: 'https://res.cloudinary.com/dwixyksno/image/upload/v1743702277/poisoned-pawn_lywepm.png',
+    },
+    {
+      id: 'football-chess',
+      name: 'Football Chess',
+      imagePath: 'https://res.cloudinary.com/dwixyksno/image/upload/v1744961841/WhatsApp_Image_2025-04-18_at_12.03.38_26083d67_xopxlr.jpg',
     },
     {
       id: 'normal-chess',

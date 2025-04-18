@@ -178,9 +178,13 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("gameOver", message);
     });
 
+    socket.on("goalScored", ({ roomID, color }) => {
+        const room = rooms[roomID];
+        if (!room) return;
+        const message = `Goal scored. ${color === "w" ? "White" : "Black"} wins.`;
+        io.to(roomID).emit("gameOver", message);
+    });
 
-
-    // Time events
     socket.on("updateTime", ({ roomID, whiteTime, blackTime, lastMoveTime }) => {
         if (!rooms[roomID]) return;
         
