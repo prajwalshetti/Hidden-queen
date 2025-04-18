@@ -1,48 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react';
-export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare,socket) => {
+
+export const customPieces = (playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare, socket) => {
+    const variant = "anarcandy";
 
     const [isWhiteKingNull, setIsWhiteKingNull] = useState(false);
-const [isBlackKingNull, setIsBlackKingNull] = useState(false);
+    const [isBlackKingNull, setIsBlackKingNull] = useState(false);
 
-// Socket event listener setup for kingNull event - place this in your useEffect or component setup
-useEffect(() => {
-  // Assuming socket is already initialized elsewhere in your code
-  socket.on("kingNull", (color) => {
-    console.log(`King null event received for ${color === "w" ? "white" : "black"}`);
-    
-    if (color === "w") {
-      setIsWhiteKingNull(true);
-    } else {
-      setIsBlackKingNull(true);
-    }
-  });
-  
-  // Clean up listener on component unmount
-  return () => {
-    socket.off("kingNull");
-  };
-}, []);
+    useEffect(() => {
+        socket.on("kingNull", (color) => {
+            console.log(`King null event received for ${color === "w" ? "white" : "black"}`);
+            if (color === "w") {
+                setIsWhiteKingNull(true);
+            } else {
+                setIsBlackKingNull(true);
+            }
+        });
 
-    // Utility function to determine drag opacity
+        return () => {
+            socket.off("kingNull");
+        };
+    }, []);
+
     const getDragOpacity = (pieceColor, isDragging) => {
-        if (!isDragging) return 1; // Not being dragged, fully visible
-        
-        // Check if the player's role matches the piece color they're dragging
-        const isPlayerPiece = (pieceColor === 'w' && playerRole === 'w') || 
-                             (pieceColor === 'b' && playerRole === 'b');
-        
-        return isPlayerPiece ? 0.5 : 0; // 0.5 opacity for own pieces, 0 for opponent's
+        if (!isDragging) return 1;
+        const isPlayerPiece = (pieceColor === 'w' && playerRole === 'w') || (pieceColor === 'b' && playerRole === 'b');
+        return isPlayerPiece ? 0.5 : 0;
     };
 
     const [backupHqwsquare, setBackupHqwsquare] = useState(hqwsquare);
     useEffect(() => {
-    const timeoutId = setTimeout(() => {setBackupHqwsquare(hqwsquare);}, 500);
+        const timeoutId = setTimeout(() => {
+            setBackupHqwsquare(hqwsquare);
+        }, 500);
         return () => clearTimeout(timeoutId);
     }, [hqwsquare]);
 
     const [backupHqbsquare, setBackupHqbsquare] = useState(hqbsquare);
     useEffect(() => {
-    const timeoutId = setTimeout(() => {setBackupHqbsquare(hqbsquare);}, 500);
+        const timeoutId = setTimeout(() => {
+            setBackupHqbsquare(hqbsquare);
+        }, 500);
         return () => clearTimeout(timeoutId);
     }, [hqbsquare]);
 
@@ -50,23 +47,21 @@ useEffect(() => {
         // WHITE PIECES
         wQ: ({ squareWidth, isDragging, square }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
-            
-            if (hqwstatus === 1 && (square === hqwsquare||square===backupHqwsquare)) {
+
+            if (hqwstatus === 1 && (square === hqwsquare || square === backupHqwsquare)) {
                 if (playerRole === 'w') {
-                    // Show hidden queen to white
                     return (
                         <img
-                            src="/normal/white/hqw.png"
-                            style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                            src={`/${variant}/wHQ.svg`}
+                            style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                             alt="hidden white queen"
                         />
                     );
                 } else {
-                    // Show pawn to black
                     return (
                         <img
-                            src="/normal/white/pawn.png"
-                            style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                            src={`/${variant}/wP.svg`}
+                            style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                             alt="disguised white queen as pawn"
                         />
                     );
@@ -76,8 +71,8 @@ useEffect(() => {
             if (hqwstatus === 2 && square === hqwsquare) {
                 return (
                     <img
-                        src="/normal/white/queen.png"
-                        style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                        src={`/${variant}/wQ.svg`}
+                        style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                         alt="revealed white queen"
                     />
                 );
@@ -85,8 +80,8 @@ useEffect(() => {
 
             return (
                 <img
-                    src="/normal/white/queen.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/wQ.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="white queen"
                 />
             );
@@ -94,61 +89,55 @@ useEffect(() => {
 
         wP: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
-            
             return (
                 <img
-                    src="/normal/white/pawn.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/wP.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="white pawn"
                 />
             );
         },
-        
+
         wK: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
-
-            if(isWhiteKingNull)return null;
-            
+            if (isWhiteKingNull) return null;
             return (
                 <img
-                    src="/normal/white/king.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/wK.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="white king"
                 />
             );
         },
-        
+
         wR: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
-            
             return (
                 <img
-                    src="/normal/white/rook.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/wR.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="white rook"
                 />
             );
         },
-        
+
         wB: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
-            
             return (
                 <img
-                    src="/normal/white/bishop.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/wB.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="white bishop"
                 />
             );
         },
-        
+
         wN: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('w', isDragging);
-            
             return (
                 <img
-                    src="/normal/white/knight.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/wN.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="white knight"
                 />
             );
@@ -157,23 +146,21 @@ useEffect(() => {
         // BLACK PIECES
         bQ: ({ squareWidth, isDragging, square }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
-            
-            if (hqbstatus === 1 && (square === hqbsquare||square===backupHqbsquare)) {
+
+            if (hqbstatus === 1 && (square === hqbsquare || square === backupHqbsquare)) {
                 if (playerRole === 'b') {
-                    // Show hidden queen to black
                     return (
                         <img
-                            src="/normal/black/hqb.png"
-                            style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                            src={`/${variant}/bHQ.svg`}
+                            style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                             alt="hidden black queen"
                         />
                     );
                 } else {
-                    // Show pawn to white
                     return (
                         <img
-                            src="/normal/black/pawn.png"
-                            style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                            src={`/${variant}/bP.svg`}
+                            style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                             alt="disguised black queen as pawn"
                         />
                     );
@@ -183,8 +170,8 @@ useEffect(() => {
             if (hqbstatus === 2 && square === hqbsquare) {
                 return (
                     <img
-                        src="/normal/black/queen.png"
-                        style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                        src={`/${variant}/bQ.svg`}
+                        style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                         alt="revealed black queen"
                     />
                 );
@@ -192,8 +179,8 @@ useEffect(() => {
 
             return (
                 <img
-                    src="/normal/black/queen.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/bQ.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="black queen"
                 />
             );
@@ -201,61 +188,55 @@ useEffect(() => {
 
         bP: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
-            
             return (
                 <img
-                    src="/normal/black/pawn.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/bP.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="black pawn"
                 />
             );
         },
-        
+
         bK: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
-
-            if(isBlackKingNull)return null;
-            
+            if (isBlackKingNull) return null;
             return (
                 <img
-                    src="/normal/black/king.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/bK.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="black king"
                 />
             );
         },
-        
+
         bR: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
-            
             return (
                 <img
-                    src="/normal/black/rook.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/bR.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="black rook"
                 />
             );
         },
-        
+
         bB: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
-            
             return (
                 <img
-                    src="/normal/black/bishop.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/bB.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="black bishop"
                 />
             );
         },
-        
+
         bN: ({ squareWidth, isDragging }) => {
             const dragOpacity = getDragOpacity('b', isDragging);
-            
             return (
                 <img
-                    src="/normal/black/knight.png"
-                    style={{ width: squareWidth, height: squareWidth, opacity: isDragging ? dragOpacity : 1 }}
+                    src={`/${variant}/bN.svg`}
+                    style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                     alt="black knight"
                 />
             );
