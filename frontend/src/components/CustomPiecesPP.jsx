@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export const CustomPiecesPP = (playerRole, hqwsquare, hqbsquare, socket) => {
-    const variant = "spatial";
+    const variant = "kosal";
 
     const [isWhiteKingNull, setIsWhiteKingNull] = useState(false);
     const [isBlackKingNull, setIsBlackKingNull] = useState(false);
@@ -66,7 +66,7 @@ export const CustomPiecesPP = (playerRole, hqwsquare, hqbsquare, socket) => {
             if (playerRole === 'w') {
               return (
                 <img
-                  src={`/${variant}/a.png`}
+                  src={`/${variant}/wPP.svg`}
                   style={{ width: squareWidth, height: squareWidth, opacity: dragOpacity }}
                   alt="poisoned white pawn"
                 />
