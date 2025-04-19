@@ -199,7 +199,7 @@ export default function FeedbackForm() {
               </div>
             </div>
             
-            {/* Screenshot Option */}
+            {/* Screenshot Option
             <div className="mb-8">
               <div className="flex items-center">
                 <input
@@ -214,7 +214,7 @@ export default function FeedbackForm() {
                   I would like to attach a screenshot (you'll be prompted after submission)
                 </label>
               </div>
-            </div>
+            </div> */}
             
             {/* Submit Button */}
             <div className="flex justify-end">
