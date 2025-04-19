@@ -269,6 +269,7 @@ io.on("connection", (socket) => {
 
         // Create room if it doesn't exist
         if (!rooms[roomID]) {
+            socket.emit("gameOver","Refresh")
             return false;
         }
         
@@ -624,11 +625,11 @@ io.on("connection", (socket) => {
             
             if (room.white === socket.id) {
                 // We're not automatically ending the game on disconnect as requested
-                room.white = null;
+                // room.white = null;
                 // Don't reset the username on disconnect to allow reconnection
             } else if (room.black === socket.id) {
                 // We're not automatically ending the game on disconnect as requested
-                room.black = null;
+                // room.black = null;
                 // Don't reset the username on disconnect to allow reconnection
             } else {
                 // Remove from spectators if applicable
