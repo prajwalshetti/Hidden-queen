@@ -22,11 +22,12 @@ function App() {
         <Route path="/hqchessGame" element={<HQChessGame />} />
         <Route path="/ppchessGame" element={<PPChessGame />} />
         <Route path="/fbchessgame" element={<FBChessGame />} />
-        <Route path="/feedback" element={<FeedbackForm />} />
+        {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Home />} />
           <Route path="rules" element={<Rules />} /> 
           <Route path="about" element={<About />} /> 
+          <Route path="feedback" element={<FeedbackForm />} /> 
         </Route>
       </Routes>
     </BrowserRouter>

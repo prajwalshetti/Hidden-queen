@@ -70,11 +70,11 @@ export default function FeedbackForm() {
   };
   
   return (
-    <div className="min-h-screen bg-gray-900 text-white py-16 px-4">
+    <div className="min-h-screen bg-gray-900 text-white py-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
             We Value Your Feedback
           </h1>
           <div className="h-1 w-24 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto"></div>

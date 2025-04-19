@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Info, BookOpen } from 'lucide-react';
+import { Home, Info, BookOpen, MessageSquare } from 'lucide-react';
 import { useState } from "react";
 
 function NavBar() {
@@ -23,21 +23,29 @@ function NavBar() {
     <nav className="top-0 z-50 w-full backdrop-blur-sm bg-gray-900 border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-1">
-            <NavItem to="/dashboard" end>
-              <Home className="w-4 h-4" />
-              <span>Home</span>
-            </NavItem>
+          <div className="flex items-center">
+            {/* Navigation Items */}
+            <div className="flex items-center space-x-1">
+              <NavItem to="/dashboard" end>
+                <Home className="w-4 h-4" />
+                <span>Home</span>
+              </NavItem>
 
-            <NavItem to="/dashboard/rules">
-              <BookOpen className="w-4 h-4" />
-              <span>Rules</span>
-            </NavItem>
-            
-            <NavItem to="/dashboard/about">
-              <Info className="w-4 h-4" />
-              <span>About</span>
-            </NavItem>
+              <NavItem to="/dashboard/rules">
+                <BookOpen className="w-4 h-4" />
+                <span>Rules</span>
+              </NavItem>
+              
+              <NavItem to="/dashboard/about">
+                <Info className="w-4 h-4" />
+                <span>About</span>
+              </NavItem>
+
+              <NavItem to="/dashboard/feedback">
+                <MessageSquare className="w-4 h-4" />
+                <span>Feedback</span>
+              </NavItem>
+            </div>
           </div>
         </div>
       </div>

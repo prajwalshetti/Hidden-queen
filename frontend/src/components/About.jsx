@@ -128,9 +128,9 @@ export default function AboutUs() {
       <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-purple-900/30 to-transparent"></div>
       <div className="absolute bottom-0 right-0 w-full h-64 bg-gradient-to-t from-indigo-900/30 to-transparent"></div>
       
-      <div className="relative z-10 container mx-auto px-4 py-20">
+      <div className="relative z-10 container mx-auto px-4 py-10">
         {/* Animated Header Section */}
-        <div className={`text-center mb-20 transition-all duration-1000 ${animateHeader ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-10'}`}>
+        <div className={`text-center mb-20 transition-all duration-300`}>
           <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
             Meet Our Team
           </h1>

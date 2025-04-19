@@ -16,30 +16,34 @@ function Home() {
     {
       id: 'hidden-queen',
       name: 'Hidden Queen',
-      imagePath: "https://res.cloudinary.com/dwixyksno/image/upload/v1743702190/hidden-queen_w7z78z.png"
+      imagePath: "hidden-queen-photo.jpg"
     },
     {
       id: 'poisoned-pawn',
       name: 'Poisoned Pawn',
-      imagePath: 'https://res.cloudinary.com/dwixyksno/image/upload/v1743702277/poisoned-pawn_lywepm.png',
+      imagePath: 'poisoned-pawn-photo.jpg',
     },
     {
       id: 'football-chess',
       name: 'Football Chess',
-      imagePath: 'https://res.cloudinary.com/dwixyksno/image/upload/v1744961841/WhatsApp_Image_2025-04-18_at_12.03.38_26083d67_xopxlr.jpg',
+      imagePath: 'football-chess-photo.jpg',
     },
     {
       id: 'normal-chess',
       name: 'Normal Chess',
-      imagePath: 'https://res.cloudinary.com/dwixyksno/image/upload/v1743702268/normal-chess_c1mrax.png',
+      imagePath: 'normal-chess-photo.jpg',
     }
   ];
   
   return (
     <div className="min-h-screen bg-gray-900 py-9 px-4">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-white mb-9">Chess Variants</h1>
-        
+      <div className={`text-center mb-10 transition-all duration-300`}>
+          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
+            Ches Variants
+          </h1>
+          <div className="h-1 w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto"></div>
+        </div>        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {chessVariants.map((variant) => (
             <div 
