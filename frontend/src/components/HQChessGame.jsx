@@ -11,7 +11,7 @@ import LoadingBoxes from './ui/LoadingBoxes';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 import PieceThemeSelector from './ui/PieceThemeSelector';
 
-const socket = io("http://localhost:8082");
+const socket = io("http://localhost:8080");
 
 function HQChessGame() {
   const navigate = useNavigate();

@@ -40,7 +40,7 @@ function Home() {
       <div className="max-w-7xl mx-auto">
       <div className={`text-center mb-10 transition-all duration-300`}>
           <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
-            Ches Variants
+            Chess Variants
           </h1>
           <div className="h-1 w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto"></div>
         </div>        

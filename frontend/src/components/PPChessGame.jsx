@@ -11,7 +11,7 @@ import LoadingBoxes from './ui/LoadingBoxes';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 
-const socket = io("http://localhost:8082");
+const socket = io("http://localhost:8080");
 
 function PPChessGame() {
   const navigate = useNavigate();
