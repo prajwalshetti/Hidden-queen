@@ -25,48 +25,48 @@ export default function FeedbackForm() {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // setIsSubmitting(true);
+    setIsSubmitting(true);
     
-    // try {
-    //   // Update this URL to your Express server's address
-    //   const response = await fetch('http://localhost:8002/api/submit-feedback', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(formData),
-    //   });
+    try {
+      // Update this URL to your Express server's address
+      const response = await fetch('http://localhost:8002/api/submit-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
       
-    //   if (response.ok) {
-    //     setSubmitStatus({
-    //       success: true,
-    //       message: 'Thank you for your feedback! We appreciate your input.'
-    //     });
-    //     // Reset form
-    //     setFormData({
-    //       name: '',
-    //       email: '',
-    //       problemType: 'bug',
-    //       problemDescription: '',
-    //       suggestion: '',
-    //       rating: 3,
-    //       attachScreenshot: false
-    //     });
-    //   } else {
-    //     throw new Error('Failed to submit feedback');
-    //   }
-    // } catch (error) {
-    //   setSubmitStatus({
-    //     success: false,
-    //     message: 'Something went wrong. Please try again later.'
-    //   });
-    // } finally {
-    //   setIsSubmitting(false);
+      if (response.ok) {
+        setSubmitStatus({
+          success: true,
+          message: 'Thank you for your feedback! We appreciate your input.'
+        });
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          problemType: 'bug',
+          problemDescription: '',
+          suggestion: '',
+          rating: 3,
+          attachScreenshot: false
+        });
+      } else {
+        throw new Error('Failed to submit feedback');
+      }
+    } catch (error) {
+      setSubmitStatus({
+        success: false,
+        message: 'Something went wrong. Please try again later.'
+      });
+    } finally {
+      setIsSubmitting(false);
       
-    //   setTimeout(() => {
-    //     setSubmitStatus(null);
-    //   }, 5000);
-    // }
+      setTimeout(() => {
+        setSubmitStatus(null);
+      }, 5000);
+    }
   };
   
   return (
