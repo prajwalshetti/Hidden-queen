@@ -437,12 +437,7 @@ function ChessGame() {
                       )}
 
                       {(gameEnded) && (
-                      <button
-                          onClick={()=>navigate("/dashboard/feedback")}
-                          className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300"
-                        >
-                          Give feedback
-                      </button>
+                      <button onClick={()=>navigate("/dashboard/feedback")} className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300">Give feedback</button>
                       )}
                       
                   {playerRole === "spectator" && (
