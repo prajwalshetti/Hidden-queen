@@ -229,12 +229,6 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("gameOver", message);
     });
 
-    // Draw handler
-    socket.on("drawGame", ({ roomID }) => {
-        const message = "The game ended in a draw.";
-        io.to(roomID).emit("gameOver", message);
-    });
-
     socket.on("drawReq", ({ roomID, color }) => {
         if (!rooms[roomID]) return;
         const room = rooms[roomID];
@@ -247,7 +241,8 @@ io.on("connection", (socket) => {
         if (room.black) io.to(room.black).emit("chatMessage", message);
         io.to(roomID).emit("showMessage", `${username} has requested a draw .............................. Opponent can click draw to claim the draw.`);
         room.spectators.forEach(id => io.to(id).emit("chatMessage", message));
-        if (room.drawReq.white && room.drawReq.black) io.to(roomID).emit("gameOver", "The game ended in a draw by mutual agreement.");
+        if (room.drawReq.white && room.drawReq.black){ io.to(roomID).emit("gameOver", "The game ended in a draw by mutual agreement.");        delete rooms[roomID];
+        }
       });
       
       socket.on("drawReqBack", ({ roomID, color }) => {
@@ -504,6 +499,13 @@ io.on("connection", (socket) => {
         });
     });
 
+        // Draw handler
+        socket.on("drawGame", ({ roomID }) => {
+            const message = "The game ended in a draw.";
+            io.to(roomID).emit("gameOver", message);
+            delete rooms[roomID];
+        });
+
     //local storage cleared
     //room not destoryed
     socket.on("timeOut", ({ roomID, color }) => {
@@ -512,6 +514,8 @@ io.on("connection", (socket) => {
         const winner = color === 'w' ? 'Black' : 'White';
         const message = `Time's up! ${winner} wins by timeout.`;
         io.to(roomID).emit("gameOver", message);
+
+        delete rooms[roomID];
     });
 
     //local storage cleared
@@ -547,6 +551,7 @@ io.on("connection", (socket) => {
                 io.to(spectatorId).emit("gameOver", "Black resigned. White wins.");
             });
         }
+        delete rooms[roomID];
     });
 
     //local storage cleared
