@@ -9,7 +9,7 @@ dotenv.config({
 });
 
 // Set up feedback endpoint
-app.post('/api/submit-feedback', async (req, res) => {
+app.post('/api/v1/submit-feedback', async (req, res) => {
   try {
     const {
       name,

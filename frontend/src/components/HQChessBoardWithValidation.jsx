@@ -2,7 +2,7 @@
 import { Chessboard } from "react-chessboard";
 import { useState, useEffect } from "react";
 // In a backend script, for instance backend/index.mjs:
-import { Chess } from '../../../lib/chess.js';
+import { Chess } from '../../lib/chess.js';
 import { customPieces } from './CustomPieces.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 
