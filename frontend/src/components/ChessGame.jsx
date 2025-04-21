@@ -34,7 +34,7 @@ function ChessGame() {
   const [isDrawRequested, setIsDrawRequested] = useState(false);
   const [roomIDSuffix,setRoomIDSuffix]=useState("_PHANTOM")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
-  
+
   // Clock references and state
   const clockInterval = useRef(null);
   const lastTickTime = useRef(Date.now());
@@ -52,6 +52,8 @@ function ChessGame() {
 
     // Only start the clock if the game has started and not ended
     if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player") {
+      lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
+      
       clockInterval.current = setInterval(() => {
         const now = Date.now();
         const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
@@ -397,13 +399,11 @@ function ChessGame() {
               
               <div className="md:col-span-1 flex flex-col space-y-4">
               {(playerRole==="b"||boardOrientation === "black-below") ? (
-                <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
-                  ) : (
-                <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
+                <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded&&whiteUsername !== "White Player" &&blackUsername !== "Black Player"} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
+              ) : (
+                <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded&&whiteUsername !== "White Player" &&blackUsername !== "Black Player"} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
               )}
 
-
-                
                 <div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-gray-700">
                   <div className="flex justify-between items-center mb-4">
                     <div className="bg-gray-700 px-4 py-2 rounded-lg">
@@ -414,14 +414,14 @@ function ChessGame() {
                     </div>
                     
                     <div className="flex space-x-3">
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
+                    {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
                         <button onClick={confirmResign}
                           className="bg-red-700 hover:bg-red-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
                           Resign
                         </button>
                       )}
 
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
+{playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
                         <button
                           onClick={handleDrawRequest}
                           className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
@@ -429,7 +429,7 @@ function ChessGame() {
                         </button>
                       )}
 
-                      {(playerRole === "spectator" || gameEnded || blackUsername === "Black Player" || whiteUsername === "White Player") && (
+{(playerRole === "spectator" || gameEnded || blackUsername === "Black Player" || whiteUsername === "White Player") && (
                         <button onClick={handleLeaveRoom}
                           className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-2 rounded-lg shadow-lg transition-all duration-300">
                           Leave Room
@@ -491,9 +491,9 @@ function ChessGame() {
                 </div>
                 
                 {(playerRole==="b"||boardOrientation === "black-below") ? (
-                  <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
-                  ) : (
-                  <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
+                  <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded&&whiteUsername !== "White Player" &&blackUsername !== "Black Player"} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
+                ) : (
+                  <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded&&whiteUsername !== "White Player" &&blackUsername !== "Black Player"} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
                 )}
               </div>
               
