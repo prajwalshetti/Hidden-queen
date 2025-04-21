@@ -29,7 +29,7 @@ export default function FeedbackForm() {
     
     try {
       // Update this URL to your Express server's address
-      const response = await fetch('http://localhost:8002/api/v1/submit-feedback', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/submit-feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
