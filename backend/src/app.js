@@ -504,6 +504,8 @@ io.on("connection", (socket) => {
         });
     });
 
+    //local storage cleared
+    //room not destoryed
     socket.on("timeOut", ({ roomID, color }) => {
         if (!rooms[roomID]) return;
         
@@ -512,6 +514,8 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("gameOver", message);
     });
 
+    //local storage cleared
+    //room not destoryed
     socket.on("resign", ({ roomID }) => {
         if (!rooms[roomID]) return;
 
@@ -545,6 +549,8 @@ io.on("connection", (socket) => {
         }
     });
 
+    //local storage cleared
+    //room is destroyed if both white and black is null
     socket.on("leaveRoom", ({ roomID }) => {
         if (!rooms[roomID]) return;
         
@@ -609,12 +615,14 @@ io.on("connection", (socket) => {
         delete socketRoles[socket.id];
         
         // Clean up empty rooms
-        if (!room.white && !room.black && room.spectators.length === 0) {
+        if (!room.white && !room.black) {
             delete rooms[roomID];
             console.log(`Room ${roomID} deleted (empty)`);
         }
     });
 
+    //local storage is not cleared
+    //room is destroyed if both white and black is null
     socket.on("disconnect", () => {
         console.log("Player disconnected:", socket.id);
         
@@ -637,7 +645,7 @@ io.on("connection", (socket) => {
             }
             
             // Clean up empty rooms
-            if (!room.white && !room.black && room.spectators.length === 0) {
+            if (!room.white && !room.black) {
                 delete rooms[roomID];
             }
         }
