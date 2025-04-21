@@ -177,7 +177,7 @@ function ChessGame() {
 
     socket.on("showMessage", (msg) => {
       setMessage(msg);
-      setTimeout(() => setMessage(""), 5000);
+      setTimeout(() => setMessage(""), 10000);
     });
 
     return () => {
