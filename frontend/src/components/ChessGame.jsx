@@ -31,7 +31,6 @@ function ChessGame() {
   const [isWhiteTurn, setIsWhiteTurn] = useState(true);
   const [usernameInput, setUsernameInput] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
-  const [isDrawRequested, setIsDrawRequested] = useState(false);
   const [roomIDSuffix,setRoomIDSuffix]=useState("_PHANTOM")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
   const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
@@ -266,13 +265,6 @@ function ChessGame() {
     
     navigate('/dashboard');
   };
-
-  const handleDrawRequest = () => {
-    const eventName = isDrawRequested ? "drawReqBack" : "drawReq";
-    socket.emit(eventName, { roomID, color: playerRole });
-
-    setIsDrawRequested(!isDrawRequested);
-  }
   
   const handleTimeUp = (color) => {
     if (!gameEnded) {
@@ -427,13 +419,13 @@ function ChessGame() {
 
 {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
                         <button
-                          onClick={handleDrawRequest}
+                          onClick={()=>socket.emit("drawReq", { roomID, color: playerRole })}
                           className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
-                          {isDrawRequested ? "Cancel Draw Req" : "Draw Req"}
+                          Draw Req
                         </button>
                       )}
 
-{(playerRole === "spectator" || gameEnded || blackUsername === "Black Player" || whiteUsername === "White Player") && (
+                      {(playerRole === "spectator" || gameEnded || blackUsername === "Black Player" || whiteUsername === "White Player") && (
                         <button onClick={handleLeaveRoom}
                           className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-2 rounded-lg shadow-lg transition-all duration-300">
                           Leave Room
@@ -473,7 +465,7 @@ function ChessGame() {
                 <p className="text-white">Your opponent offered a draw</p>
                 <div className="flex space-x-2">
                   <button onClick={() => socket.emit("drawGame", { roomID })} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Accept</button>
-                  <button onClick={() => setIsReplyingToDrawReq(false)} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Decline</button>
+                  <button onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Decline</button>
                 </div></div>
               )}
                   
