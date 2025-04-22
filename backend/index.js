@@ -76,9 +76,9 @@ app.post('/api/v1/submit-feedback', async (req, res) => {
 
 // Connect to database and start server
 connectDB().then(() => {
-    app.listen(process.env.PORT, () => {
-        console.log(`App is listening on port ${process.env.PORT}`);
-    });
+    // app.listen(process.env.PORT, () => {
+    //     console.log(`App is listening on port ${process.env.PORT}`);
+    // });
 }).catch(err => {
     console.error("Database connection failed:", err);
     process.exit(1);
