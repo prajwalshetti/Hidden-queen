@@ -37,10 +37,10 @@ function PPChessGame() {
   const [hqbsquare, setHqbsquare] = useState(null);
   const [hqwstatus, setHqwstatus] = useState(0);
   const [hqbstatus, setHqbstatus] = useState(0);
-  const [isDrawRequested, setIsDrawRequested] = useState(false);
   const [roomIDSuffix,setRoomIDSuffix]=useState("_PP")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
   const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus};
+  const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
 
   // Clock references and state
   const clockInterval = useRef(null);
@@ -195,6 +195,8 @@ function PPChessGame() {
       setTimeout(() => setMessage(""), 10000);
     });
 
+    socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
+
     return () => {
       socket.off("playerRole");
       socket.off("boardState");
@@ -205,6 +207,7 @@ function PPChessGame() {
       socket.off("timeSync");
       socket.off("timeUpdate");
       socket.off("showMessage");
+      socket.off("replyToDrawReq");
     };
   }, []);
 
@@ -282,13 +285,6 @@ function PPChessGame() {
     setHqbstatus(0);
     
     navigate('/dashboard');
-  };
-
-  const handleDrawRequest = () => {
-    const eventName = isDrawRequested ? "drawReqBack" : "drawReq";
-    socket.emit(eventName, { roomID, color: playerRole });
-
-    setIsDrawRequested(!isDrawRequested);
   };
   
   const handleTimeUp = (color) => {
@@ -483,10 +479,10 @@ function PPChessGame() {
 
                       {playerRole !== "spectator" && !gameEnded && !isResigning && hqbsquare !== null && hqwsquare !== null && (
                         <button
-                          onClick={handleDrawRequest}
-                          className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
-                          {isDrawRequested ? "Cancel Draw Req" : "Draw Req"}
-                        </button>
+                        onClick={()=>socket.emit("drawReq", { roomID, color: playerRole })}
+                        className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
+                          Draw Req
+                          </button>
                       )}
 
                       {(playerRole === "spectator" || gameEnded || hqbsquare === null || hqwsquare === null) && (
@@ -553,6 +549,14 @@ function PPChessGame() {
                       </div>
                     </div>
                   )}
+                                {isReplyingToDrawReq && !gameEnded &&(
+                <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-between space-x-4">
+                <p className="text-white">Your opponent offered a draw</p>
+                <div className="flex space-x-2">
+                  <button onClick={() => socket.emit("drawGame", { roomID })} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Accept</button>
+                  <button onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Decline</button>
+                </div></div>
+              )}
                   
                   {message && (
                       <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>

@@ -32,7 +32,7 @@ function FBChessGame() {
   const [isWhiteTurn, setIsWhiteTurn] = useState(true);
   const [usernameInput, setUsernameInput] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
-  const [isDrawRequested, setIsDrawRequested] = useState(false);
+  const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
   const [roomIDSuffix,setRoomIDSuffix]=useState("_FB")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
   
@@ -182,6 +182,7 @@ function FBChessGame() {
       setTimeout(() => setMessage(""), 10000);
     });
 
+    socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
     return () => {
       socket.off("playerRole");
       socket.off("boardState");
@@ -191,6 +192,7 @@ function FBChessGame() {
       socket.off("timeSync");
       socket.off("timeUpdate");
       socket.off("showMessage");
+      socket.off("replyToDrawReq");
     };
   }, []);
 
@@ -263,13 +265,6 @@ function FBChessGame() {
     navigate('/dashboard');
   };
 
-  const handleDrawRequest = () => {
-    const eventName = isDrawRequested ? "drawReqBack" : "drawReq";
-    socket.emit(eventName, { roomID, color: playerRole });
-
-    setIsDrawRequested(!isDrawRequested);
-  }
-  
   const handleTimeUp = (color) => {
     if (!gameEnded) {
       const winner = color === 'white' ? 'Black' : 'White';
@@ -437,9 +432,9 @@ function FBChessGame() {
 
                       {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
                         <button
-                          onClick={handleDrawRequest}
-                          className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
-                          {isDrawRequested ? "Cancel Draw Req" : "Draw Req"}
+                        onClick={()=>socket.emit("drawReq", { roomID, color: playerRole })}
+                        className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
+                          Draw req
                         </button>
                       )}
 
@@ -478,6 +473,15 @@ function FBChessGame() {
                       </div>
                     </div>
                   )}
+
+{isReplyingToDrawReq && !gameEnded &&(
+                <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-between space-x-4">
+                <p className="text-white">Your opponent offered a draw</p>
+                <div className="flex space-x-2">
+                  <button onClick={() => socket.emit("drawGame", { roomID })} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Accept</button>
+                  <button onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Decline</button>
+                </div></div>
+              )}
                   
                   {message && (
                       <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>
