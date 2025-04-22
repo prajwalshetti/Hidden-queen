@@ -254,6 +254,7 @@ function PPChessGame() {
 
   const handleResign = () => {
     if (playerRole !== "spectator") {
+      setIsResigning(false)
       socket.emit("resign", { roomID });
       setMessage(`You resigned. ${playerRole === 'w' ? 'Black' : 'White'} wins.`);
       setGameEnded(true);
