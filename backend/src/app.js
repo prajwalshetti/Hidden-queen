@@ -148,8 +148,6 @@ io.on("connection", (socket) => {
         });
     });    
 
-    
-
     socket.on("captureHQ", ({ roomID, color }) => {
         const room = rooms[roomID];
         if (!room) return;
@@ -176,6 +174,7 @@ io.on("connection", (socket) => {
         if (!room) return;
         const message = `Poisoned pawn captured. ${color === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
+        delete rooms[roomID];
     });
 
     socket.on("goalScored", ({ roomID, color }) => {
@@ -183,6 +182,7 @@ io.on("connection", (socket) => {
         if (!room) return;
         const message = `Goal scored. ${color === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
+        delete rooms[roomID];
     });
 
     socket.on("updateTime", ({ roomID, whiteTime, blackTime, lastMoveTime }) => {
@@ -221,12 +221,14 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("kingNull","b");
         else
         io.to(roomID).emit("kingNull","w");
+        delete rooms[roomID];
     });
 
     // Checkmate handler
     socket.on("checkmated", ({ roomID, winner }) => {
         const message = `Checkmate. ${winner === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
+        delete rooms[roomID];
     });
 
     socket.on("drawReq", ({ roomID, color }) => {
@@ -514,7 +516,6 @@ io.on("connection", (socket) => {
         const winner = color === 'w' ? 'Black' : 'White';
         const message = `Time's up! ${winner} wins by timeout.`;
         io.to(roomID).emit("gameOver", message);
-
         delete rooms[roomID];
     });
 
@@ -651,6 +652,10 @@ io.on("connection", (socket) => {
             
             // Clean up empty rooms
             if (!room.white && !room.black) {
+                delete rooms[roomID];
+            }
+
+            if ((!room.white || !room.black)&&room.whiteTime===600&&room.blackTime===600) {
                 delete rooms[roomID];
             }
         }
