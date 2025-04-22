@@ -252,6 +252,7 @@ function HiddenQueenRules({ onClose }) {
             onClick={()=>{navigate("/dashboard")}}
             whileHover={{ scale: 1.1, backgroundColor: "#FBBF24" }}
             whileTap={{ scale: 0.95 }}
+            
           >
             ♛ Start Playing!
           </motion.button>
@@ -263,6 +264,7 @@ function HiddenQueenRules({ onClose }) {
 
 // Poisoned Pawn Rules Modal
 function PoisonedPawnRules({ onClose }) {
+  const navigate = useNavigate()
   return (
     <motion.div 
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
@@ -413,7 +415,7 @@ function PoisonedPawnRules({ onClose }) {
         <div className="flex justify-center mt-6">
           <motion.button 
             className="px-6 py-3 text-xl bg-green-300 text-gray-900 font-bold rounded-lg"
-            onClick={onClose}
+            onClick={()=>{navigate("/dashboard")}}
             whileHover={{ scale: 1.1, backgroundColor: "#6EE7B7" }}
             whileTap={{ scale: 0.95 }}
           >
@@ -427,6 +429,7 @@ function PoisonedPawnRules({ onClose }) {
 
 // Football Chess Rules Modal
 function FootballChessRules({ onClose }) {
+  const navigate = useNavigate()
   return (
     <motion.div 
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
@@ -578,7 +581,7 @@ function FootballChessRules({ onClose }) {
         <div className="flex justify-center mt-6">
           <motion.button 
             className="px-6 py-3 text-xl bg-blue-300 text-gray-900 font-bold rounded-lg"
-            onClick={onClose}
+            onClick={()=>{navigate("/dashboard")}}
             whileHover={{ scale: 1.1, backgroundColor: "#93C5FD" }}
             whileTap={{ scale: 0.95 }}
           >
