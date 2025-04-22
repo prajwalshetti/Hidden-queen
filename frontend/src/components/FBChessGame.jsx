@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ChessBoardWithValidation from './ChessBoardWithValidation';
 import { io } from "socket.io-client";
 import FootballChessRules from './FBChessRules';
 import RoomCard from './Room';
@@ -385,7 +384,7 @@ function FBChessGame() {
               <div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 hidden md:block">
                 <h3 className="text-xl font-bold mb-4 text-purple-400">Game Dashboard</h3>
                 <div className="text-gray-400 text-sm">
-                  <p>Room ID: {roomID}</p>
+                  <p>Room ID: {roomID.replace(/_(HQ|PP|FB|PHANTOM)$/, '')}</p>
                   <p>Your role: {playerRole === 'w' ? 'White' : playerRole === 'b' ? 'Black' : 'Spectator'}</p>
                   <p className="mt-4 text-gray-300 font-semibold">Players:</p>
                   <p>White: {whiteUsername || "Waiting for player..."}</p>
@@ -397,10 +396,14 @@ function FBChessGame() {
                     <div className="text-white font-mono">Black: {formatTime(blackTime)}</div>
                   </div>
                   
+                  
+                  <div>
+                    <p className="mt-4 text-gray-300 font-semibold mt-5 mb-1">Piece Theme:</p>
+                    <div className="p-1"><PieceThemeSelector/></div>
+                  </div>
                   <p className="mt-4 text-xs text-gray-500">
                     Game statistics and additional controls will appear here in future updates.
                   </p>
-                  <div className="p-4"><PieceThemeSelector/></div>
                 </div>
               </div>
               

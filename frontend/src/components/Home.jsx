@@ -16,7 +16,7 @@ function Home() {
     {
       id: 'hidden-queen',
       name: 'Hidden Queen',
-      imagePath: "hidden-queen-photo.jpg"
+      imagePath: "hidden-queen-photo1.jpg"
     },
     {
       id: 'poisoned-pawn',
