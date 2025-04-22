@@ -451,7 +451,7 @@ function PPChessGame() {
                     </div>
                   )}
                   <div>
-                    <p className="mt-4 text-gray-300 font-semibold mt-5 mb-1">Piece Theme:</p>
+                    <p className="text-gray-300 font-semibold mt-5 mb-1">Piece Theme:</p>
                     <div className="p-1"><PieceThemeSelector/></div>
                   </div>
                   <p className="mt-4 text-xs text-gray-500">
