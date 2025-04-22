@@ -234,8 +234,6 @@ io.on("connection", (socket) => {
     socket.on("drawReq", ({ roomID, color }) => {
         if (!rooms[roomID]) return;
         const room = rooms[roomID];
-        if (color === "w") room.drawReq.white = true;
-        else room.drawReq.black = true;
         const username = color === "w" ? room.whiteUsername : room.blackUsername;
         const message = { username, text: `${username} has requested a draw.`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), playerRole: color };
         room.playerMessages.push(message); room.spectatorMessages.push(message);
@@ -245,24 +243,18 @@ io.on("connection", (socket) => {
 
         if (color === "w" && room.black) io.to(room.black).emit("replyToDrawReq");
         if (color === "b" && room.white) io.to(room.white).emit("replyToDrawReq");
-
-        if (room.drawReq.white && room.drawReq.black){ io.to(roomID).emit("gameOver", "The game ended in a draw by mutual agreement.");        delete rooms[roomID];
-        }
       });
-      
-      socket.on("drawReqBack", ({ roomID, color }) => {
+
+      socket.on("drawDeclined", ({ roomID, color }) => {
         if (!rooms[roomID]) return;
         const room = rooms[roomID];
-        if (color === "w") room.drawReq.white = false;
-        else room.drawReq.black = false;
         const username = color === "w" ? room.whiteUsername : room.blackUsername;
-        const message = { username, text: `${username} has withdrawn their draw request.`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), playerRole: color };
+        const message = { username, text: `${username} has declined the draw.`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), playerRole: color };
         room.playerMessages.push(message); room.spectatorMessages.push(message);
         if (room.white) io.to(room.white).emit("chatMessage", message);
         if (room.black) io.to(room.black).emit("chatMessage", message);
         room.spectators.forEach(id => io.to(id).emit("chatMessage", message));
       });
-      
     
     socket.on("joinRoomBack", ({roomID, savedRole, username}) => {
         console.log(`Player ${socket.id} (${username}) is rejoining room ${roomID}`);
@@ -346,10 +338,6 @@ io.on("connection", (socket) => {
                 hqbsquare: null, 
                 hqwstatus: 0, 
                 hqbstatus: 0,
-                drawReq: {
-                    white: false,
-                    black: false
-                },
                 // Adding clock properties
                 whiteTime: 600, // 10 minutes in seconds
                 blackTime: 600,
