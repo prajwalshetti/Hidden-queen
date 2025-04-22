@@ -241,8 +241,11 @@ io.on("connection", (socket) => {
         room.playerMessages.push(message); room.spectatorMessages.push(message);
         if (room.white) io.to(room.white).emit("chatMessage", message);
         if (room.black) io.to(room.black).emit("chatMessage", message);
-        io.to(roomID).emit("showMessage", `${username} has requested a draw .............................. Opponent can click draw to claim the draw.`);
         room.spectators.forEach(id => io.to(id).emit("chatMessage", message));
+
+        if (color === "w" && room.black) io.to(room.black).emit("replyToDrawReq");
+        if (color === "b" && room.white) io.to(room.white).emit("replyToDrawReq");
+
         if (room.drawReq.white && room.drawReq.black){ io.to(roomID).emit("gameOver", "The game ended in a draw by mutual agreement.");        delete rooms[roomID];
         }
       });

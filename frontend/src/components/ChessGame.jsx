@@ -34,6 +34,7 @@ function ChessGame() {
   const [isDrawRequested, setIsDrawRequested] = useState(false);
   const [roomIDSuffix,setRoomIDSuffix]=useState("_PHANTOM")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
+  const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
 
   // Clock references and state
   const clockInterval = useRef(null);
@@ -182,6 +183,7 @@ function ChessGame() {
       setTimeout(() => setMessage(""), 10000);
     });
 
+    socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
     return () => {
       socket.off("playerRole");
       socket.off("boardState");
@@ -191,6 +193,7 @@ function ChessGame() {
       socket.off("timeSync");
       socket.off("timeUpdate");
       socket.off("showMessage");
+      socket.off("replyToDrawReq");
     };
   }, []);
 
@@ -236,6 +239,7 @@ function ChessGame() {
 
   const handleResign = () => {
     if (playerRole !== "spectator") {
+      setIsResigning(false)
       socket.emit("resign", { roomID });
       setMessage(`You resigned. ${playerRole === 'w' ? 'Black' : 'White'} wins.`);
       setGameEnded(true);
@@ -464,6 +468,14 @@ function ChessGame() {
                       </div>
                     </div>
                   )}
+              {isReplyingToDrawReq && !gameEnded &&(
+                <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-between space-x-4">
+                <p className="text-white">Your opponent offered a draw</p>
+                <div className="flex space-x-2">
+                  <button onClick={() => socket.emit("drawGame", { roomID })} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Accept</button>
+                  <button onClick={() => setIsReplyingToDrawReq(false)} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Decline</button>
+                </div></div>
+              )}
                   
                   {message && (
                       <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>
