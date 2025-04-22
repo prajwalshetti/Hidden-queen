@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Info, BookOpen, MessageSquare, Menu, X } from 'lucide-react';
+import { Home, Info, BookOpen, MessageSquare, Menu, X, Settings } from 'lucide-react';
 import { useState } from "react";
 
 function NavBar() {
@@ -43,6 +43,7 @@ function NavBar() {
             <NavItem to="/dashboard/rules"><BookOpen className="w-4 h-4" /><span>Rules</span></NavItem>
             <NavItem to="/dashboard/about"><Info className="w-4 h-4" /><span>About</span></NavItem>
             <NavItem to="/dashboard/feedback"><MessageSquare className="w-4 h-4" /><span>Feedback</span></NavItem>
+            <NavItem to="/dashboard/settings"><Settings className="w-4 h-4" /><span>Settings</span></NavItem>
           </div>
         </div>
 
@@ -53,6 +54,7 @@ function NavBar() {
             <NavItem to="/dashboard/rules"><BookOpen className="w-4 h-4" /><span>Rules</span></NavItem>
             <NavItem to="/dashboard/about"><Info className="w-4 h-4" /><span>About</span></NavItem>
             <NavItem to="/dashboard/feedback"><MessageSquare className="w-4 h-4" /><span>Feedback</span></NavItem>
+            <NavItem to="/dashboard/settings"><Settings className="w-4 h-4" /><span>Settings</span></NavItem>
           </div>
         )}
       </div>

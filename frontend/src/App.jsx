@@ -12,6 +12,7 @@ import HQChessGame from './components/HQChessGame';
 import PPChessGame from './components/PPChessGame';
 import FBChessGame from './components/FBChessGame';
 import FeedbackForm from './components/Feedback';
+import Settings from './components/Settings';
 function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -28,6 +29,7 @@ function App() {
           <Route path="rules" element={<Rules />} /> 
           <Route path="about" element={<About />} /> 
           <Route path="feedback" element={<FeedbackForm />} /> 
+          <Route path="settings" element={<Settings />} /> 
         </Route>
       </Routes>
     </BrowserRouter>
