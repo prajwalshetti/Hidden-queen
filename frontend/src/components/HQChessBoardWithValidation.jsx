@@ -19,7 +19,6 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     }, [boardState]);
 
     function isNonPawnMove(move) {
-        // Only check for illegal pawn moves if move was from HQ square
         const from = move.from;
         const to = move.to;
 
@@ -30,11 +29,11 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
 
         if (playerRole === "w") {
             // White pawn logic
-            if (fileDiff === 0 && (rankDiff === 1 || (from[1] === "2" && rankDiff === 2))) return false;
+            if (!isCapture && fileDiff === 0 && (rankDiff === 1 || (from[1] === "2" && rankDiff === 2))) return false;
             if (fileDiff === 1 && rankDiff === 1 && isCapture) return false;
         } else if (playerRole === "b") {
             // Black pawn logic
-            if (fileDiff === 0 && (rankDiff === -1 || (from[1] === "7" && rankDiff === -2))) return false;
+            if (!isCapture && fileDiff === 0 && (rankDiff === -1 || (from[1] === "7" && rankDiff === -2))) return false;
             if (fileDiff === 1 && rankDiff === -1 && isCapture) return false;
         }
 
@@ -111,8 +110,8 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
         //logic to swap the piece on from and to in prevFen
         const newFen=swapSquares(from,to,prevFen);
 
-        setGame(new Chess(newFen));
-        socket.emit("move", { move: newFen, roomID, from: sourceSquare, to: targetSquare });
+        // setGame(new Chess(newFen));
+        socket.emit("move", { move: newFen, roomID, from,to });
 
         socket.emit("kingCaptured", { roomID, winner: playerRole });
     }
