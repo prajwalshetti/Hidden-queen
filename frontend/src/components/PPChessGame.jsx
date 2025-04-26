@@ -62,7 +62,7 @@ function PPChessGame() {
       lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
       clockInterval.current = setInterval(() => {
         const now = Date.now();
-        const elapsed = (now - lastTickTime.current)*1.45 / 1000; // Convert to seconds
+        const elapsed = (now - lastTickTime.current)*2.7 / 1000; // Convert to seconds
         lastTickTime.current = now;
 
         if (isWhiteTurn) {
