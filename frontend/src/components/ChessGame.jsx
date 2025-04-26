@@ -34,15 +34,16 @@ function ChessGame() {
   const [roomIDSuffix,setRoomIDSuffix]=useState("_PHANTOM")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
   const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
+  const [lastMoveTime, setLastMoveTime] = useState(null);
 
   // Clock references and state
   const clockInterval = useRef(null);
-  const lastTickTime = useRef(Date.now());
-  const [lastMoveTime, setLastMoveTime] = useState(null);
-
+  const CLOCK_TICK_RATE = 100; // milliseconds
+  const SECONDS_PER_TICK = 0.1; // 100ms = 0.1 seconds
+  
   const validateMode = useValidateChessMode();
 
-  // Effect for handling the game clock
+  // Effect for handling the game clock with pure interval timing
   useEffect(() => {
     // Clean up any existing interval
     if (clockInterval.current) {
@@ -52,23 +53,19 @@ function ChessGame() {
 
     // Only start the clock if the game has started and not ended
     if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player") {
-      lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
-      
       clockInterval.current = setInterval(() => {
-        const now = Date.now();
-        const elapsed = (now - lastTickTime.current)/ 1000; // Convert to seconds
-        lastTickTime.current = now;
-
         if (isWhiteTurn) {
           setWhiteTime(prevTime => {
-            const newTime = Math.max(0, prevTime - elapsed);
-            // Emit time update to keep server in sync
-            socket.emit("updateTime", {
-              roomID,
-              whiteTime: newTime,
-              blackTime,
-              lastMoveTime: now
-            });
+            const newTime = Math.max(0, prevTime - SECONDS_PER_TICK);
+            
+            // Emit time update to keep server in sync (less frequently)
+            if (Math.floor(prevTime * 10) !== Math.floor(newTime * 10)) {
+              socket.emit("updateTime", {
+                roomID,
+                whiteTime: newTime,
+                blackTime
+              });
+            }
             
             if (newTime <= 0 && !gameEnded) {
               handleTimeUp('white');
@@ -78,14 +75,16 @@ function ChessGame() {
           });
         } else {
           setBlackTime(prevTime => {
-            const newTime = Math.max(0, prevTime - elapsed);
-            // Emit time update to keep server in sync
-            socket.emit("updateTime", {
-              roomID,
-              whiteTime,
-              blackTime: newTime,
-              lastMoveTime: now
-            });
+            const newTime = Math.max(0, prevTime - SECONDS_PER_TICK);
+            
+            // Emit time update to keep server in sync (less frequently)
+            if (Math.floor(prevTime * 10) !== Math.floor(newTime * 10)) {
+              socket.emit("updateTime", {
+                roomID,
+                whiteTime,
+                blackTime: newTime
+              });
+            }
             
             if (newTime <= 0 && !gameEnded) {
               handleTimeUp('black');
@@ -94,7 +93,7 @@ function ChessGame() {
             return newTime;
           });
         }
-      }, 100); // Update every 100ms for smoother countdown
+      }, CLOCK_TICK_RATE);
     }
 
     return () => {
@@ -102,7 +101,7 @@ function ChessGame() {
         clearInterval(clockInterval.current);
       }
     };
-  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername]);
+  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername, roomID]);
 
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
@@ -141,8 +140,6 @@ function ChessGame() {
     socket.on("move", (move) => {
       setBoardState(move);
       setIsWhiteTurn(move.split(" ")[1] === "w");
-      // Reset last tick time on move to prevent time skips
-      lastTickTime.current = Date.now();
     });
     
     socket.on("gameOver", (msg) => {
@@ -157,24 +154,21 @@ function ChessGame() {
       if (info.blackUsername) setBlackUsername(info.blackUsername);
     });
     
-    // New listeners for time synchronization
+    // Time synchronization listeners
     socket.on("timeSync", (timeData) => {
       setWhiteTime(timeData.whiteTime);
       setBlackTime(timeData.blackTime);
-      setLastMoveTime(timeData.lastMoveTime);
       setIsWhiteTurn(timeData.currentTurn === "w");
-      
-      // Reset the tick timer to prevent jumps
-      lastTickTime.current = Date.now();
     });
     
     socket.on("timeUpdate", (timeData) => {
-      setWhiteTime(timeData.whiteTime);
-      setBlackTime(timeData.blackTime);
-      setLastMoveTime(timeData.lastMoveTime);
-      
-      // Reset the tick timer to prevent jumps
-      lastTickTime.current = Date.now();
+      // Only update times if we're a spectator or if it's the opponent's time update
+      if (playerRole === "spectator" || 
+         (playerRole === "w" && !isWhiteTurn) || 
+         (playerRole === "b" && isWhiteTurn)) {
+        setWhiteTime(timeData.whiteTime);
+        setBlackTime(timeData.blackTime);
+      }
     });
 
     socket.on("showMessage", (msg) => {
@@ -195,6 +189,13 @@ function ChessGame() {
       socket.off("replyToDrawReq");
     };
   }, []);
+
+  // Add an effect to request time sync after turn changes
+  useEffect(() => {
+    if (gameStarted && !gameEnded && roomID) {
+      socket.emit("requestTimeSync", { roomID });
+    }
+  }, [isWhiteTurn]);
 
   useEffect(() => {
     if (roomID && playerRole && username) {
