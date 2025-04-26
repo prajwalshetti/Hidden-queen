@@ -56,7 +56,7 @@ function ChessGame() {
       
       clockInterval.current = setInterval(() => {
         const now = Date.now();
-        const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
+        const elapsed = (now - lastTickTime.current)/ 1000; // Convert to seconds
         lastTickTime.current = now;
 
         if (isWhiteTurn) {
