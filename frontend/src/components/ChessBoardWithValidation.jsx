@@ -6,10 +6,12 @@ import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
+import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
 function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation }) {
     const [game, setGame] = useState(new Chess());
     const { pieceTheme, setPieceTheme } = usePieceTheme();
+    const { getSquareStyles } = useLastMove(socket);
 
     useEffect(() => {
         const newGame = new Chess();
@@ -32,7 +34,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
             if (move === null) return false;
 
             setGame(new Chess(game.fen()));
-            socket.emit("move", { move: game.fen(), roomID });
+            socket.emit("move", { move: game.fen(), roomID, from: sourceSquare, to: targetSquare });
 
             if (game.isCheckmate()) {
                 socket.emit("checkmated", { roomID, winner: playerRole });
@@ -57,6 +59,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
                     areArrowsAllowed={true}
                     animationDuration={200}
                     boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
+                    customSquareStyles={getSquareStyles()}
                 />
             </div>
         </div>

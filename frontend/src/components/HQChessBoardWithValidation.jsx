@@ -5,11 +5,13 @@ import { useState, useEffect } from "react";
 import { Chess } from '../../lib/chess.js';
 import { customPieces } from './CustomPieces.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
+import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
 function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData,gameEnded, boardOrientation }) {
     const { hqwsquare, hqbsquare, hqwstatus, hqbstatus, setHqwsquare, setHqbsquare, setHqwstatus, setHqbstatus } = hiddenQueenData;
     const [game, setGame] = useState(new Chess());
     const { pieceTheme, setPieceTheme } = usePieceTheme();
+    const { getSquareStyles } = useLastMove(socket);
 
     useEffect(() => {
         game.load(boardState);
@@ -87,7 +89,7 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
             }
     
             setGame(new Chess(game.fen()));
-            socket.emit("move", { move: game.fen(), roomID });
+            socket.emit("move", { move: game.fen(), roomID, from: sourceSquare, to: targetSquare });
 
             if (game.isCheckmate()) {
                 socket.emit("checkmated", { roomID, winner: playerRole });
@@ -110,7 +112,7 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
         const newFen=swapSquares(from,to,prevFen);
 
         setGame(new Chess(newFen));
-        socket.emit("move", { move: newFen, roomID });
+        socket.emit("move", { move: newFen, roomID, from: sourceSquare, to: targetSquare });
 
         socket.emit("kingCaptured", { roomID, winner: playerRole });
     }
@@ -206,6 +208,7 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                     animationDuration={0}
                     boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
                     customPieces={pieces}
+                    customSquareStyles={getSquareStyles()}
 />
             </div>
         </div>

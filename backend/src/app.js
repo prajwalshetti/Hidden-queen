@@ -469,31 +469,31 @@ io.on("connection", (socket) => {
         });
     });
 
-    socket.on("move", ({ move, roomID }) => {
-        if (!rooms[roomID]) return;
+// In your backend script (e.g., backend/index.mjs):
+socket.on("move", ({ move, roomID, from, to }) => {
+    if (!rooms[roomID]) return;
 
-        const room = rooms[roomID];
-        const { white, black } = room;
-        const playerRole = socket.id === white ? "w" : socket.id === black ? "b" : "spectator";
+    const room = rooms[roomID];
+    const { white, black } = room;
+    const playerRole = socket.id === white ? "w": socket.id === black ? "b": "spectator";
+    if (playerRole === "spectator") return;
 
-        if (playerRole === "spectator") return;
+    room.boardState = move;
+    room.lastMoveTime = Date.now();
 
-        // Update board state
-        room.boardState = move;
-        
-        // Update last move time
-        room.lastMoveTime = Date.now();
-        
-        // Broadcast move to all clients
-        io.to(roomID).emit("move", move);
-        
-        // Send updated time info
-        io.to(roomID).emit("timeUpdate", {
-            whiteTime: room.whiteTime,
-            blackTime: room.blackTime,
-            lastMoveTime: room.lastMoveTime
-        });
+    io.to(roomID).emit("move", move);
+
+    if (from && to) {
+        io.to(roomID).emit("lastMoveSquares", { from, to });
+    }
+
+    io.to(roomID).emit("timeUpdate", {
+        whiteTime: room.whiteTime,
+        blackTime: room.blackTime,
+        lastMoveTime: room.lastMoveTime
     });
+});
+
 
         // Draw handler
         socket.on("drawGame", ({ roomID }) => {

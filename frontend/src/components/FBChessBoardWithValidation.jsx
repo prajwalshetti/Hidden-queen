@@ -6,10 +6,12 @@ import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
+import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
 function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation }) {
     const [game, setGame] = useState(new Chess());
     const { pieceTheme, setPieceTheme } = usePieceTheme();
+    const { getSquareStyles } = useLastMove(socket);
 
     useEffect(() => {
         const newGame = new Chess();
@@ -32,7 +34,7 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
             if (move === null) return false;
 
             setGame(new Chess(game.fen()));
-            socket.emit("move", { move: game.fen(), roomID });
+            socket.emit("move", { move: game.fen(), roomID, from: sourceSquare, to: targetSquare });
 
 
             console.log(playerRole,targetSquare)
@@ -73,7 +75,28 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
             backgroundImage: 'linear-gradient(45deg, #f0f0f0 5%, #999 5%, #999 45%, #f0f0f0 45%, #f0f0f0 55%, #999 55%, #999 95%, #f0f0f0 95%)',
             backgroundSize: '20px 20px'
         },
-    };    
+    };
+
+    const mergedSquareStyles = (() => {
+        const goalStyles = customSquareStyles;
+        const lastMoveStyles = getSquareStyles();
+        const merged = { ...goalStyles };
+    
+        for (const square in lastMoveStyles) {
+            if (goalStyles[square]) {
+                // Combine both styles: goal pattern + yellow border
+                merged[square] = {
+                    ...goalStyles[square],
+                    boxShadow: 'inset 0 0 0 3px yellow', // Add a highlight without losing pattern
+                };
+            } else {
+                merged[square] = lastMoveStyles[square];
+            }
+        }
+    
+        return merged;
+    })();
+    
 
     return (
         <div className="flex justify-center items-center">
@@ -85,7 +108,7 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
                     boardWidth={400}
                     areArrowsAllowed={true}
                     animationDuration={200}
-                    customSquareStyles={customSquareStyles}
+                    customSquareStyles={mergedSquareStyles}
                     boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
                 />
             </div>
