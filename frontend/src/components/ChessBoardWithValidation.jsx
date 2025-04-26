@@ -2,7 +2,7 @@
 //ChessBoardWithValidation.jsx
 // ChessBoardWithValidation.jsx
 import { Chessboard } from "react-chessboard";
-import { useState, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";// In a backend script, for instance backend/index.mjs:
 import { Chess } from "chess.js";
 import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
@@ -48,14 +48,30 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
         }
     }
 
+
+    const containerRef = useRef(null);
+    const [boardSize, setBoardSize] = useState(400);
+
+    useEffect(() => {
+        const updateSize = () => {
+            if (containerRef.current) {
+                const size = Math.min(containerRef.current.offsetWidth, 400); 
+                setBoardSize(size);
+            }
+        };
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
+
     return (
-        <div className="flex justify-center items-center">
-            <div style={{ width: "400px", height: "400px" }}>
+        <div className="flex justify-center items-center overflow-hidden" ref={containerRef}>
+    <div style={{ width: boardSize, height: boardSize }}>
                 <Chessboard
                     position={game.fen()}
                     onPieceDrop={onDrop}
                     customPieces={CustomPiecesNF(playerRole, socket,pieceTheme)}
-                    boardWidth={400}
+                    boardWidth={boardSize}
                     areArrowsAllowed={true}
                     animationDuration={200}
                     boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}

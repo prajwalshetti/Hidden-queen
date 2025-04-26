@@ -1,6 +1,6 @@
 //@pranav take this and test PPChessBoardWithValidation
 import { Chessboard } from "react-chessboard";
-import { useState, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";// In a backend script, for instance backend/index.mjs:
 // In a backend script, for instance backend/index.mjs:
 import { Chess } from 'chess.js';
 import { CustomPiecesPP } from './CustomPiecesPP.jsx';
@@ -81,14 +81,29 @@ function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
             return false;
         }
     }
+
+    const containerRef = useRef(null);
+    const [boardSize, setBoardSize] = useState(400);
+
+    useEffect(() => {
+        const updateSize = () => {
+            if (containerRef.current) {
+                const size = Math.min(containerRef.current.offsetWidth, 400); 
+                setBoardSize(size);
+            }
+        };
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
     
     return (
-        <div className="flex justify-center items-center">
-            <div style={{ width: "400px", height: "400px" }}>     
+        <div className="flex justify-center items-center overflow-hidden" ref={containerRef}>
+    <div style={{ width: boardSize, height: boardSize }}>   
             <Chessboard
   position={game.fen()}
   onPieceDrop={onDrop}
-  boardWidth={400}
+  boardWidth={boardSize}
   animationDuration={400}
   boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
   customPieces={CustomPiecesPP(playerRole, hqwsquare, hqbsquare, socket,pieceTheme )}

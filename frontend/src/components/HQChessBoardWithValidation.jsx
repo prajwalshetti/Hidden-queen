@@ -221,6 +221,7 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
             onPieceDrop={onDrop}
             boardWidth={boardSize}
             animationDuration={0}
+            areArrowsAllowed={true}
             boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
             customPieces={pieces}
             customSquareStyles={getSquareStyles()}

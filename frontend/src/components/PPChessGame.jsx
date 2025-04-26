@@ -62,7 +62,7 @@ function PPChessGame() {
       lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
       clockInterval.current = setInterval(() => {
         const now = Date.now();
-        const elapsed = (now - lastTickTime.current)*2.7 / 1000; // Convert to seconds
+        const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
         lastTickTime.current = now;
 
         if (isWhiteTurn) {
@@ -100,7 +100,7 @@ function PPChessGame() {
             return newTime;
           });
         }
-      }, 200); // Update every 100ms for smoother countdown
+      }, 100); // Update every 100ms for smoother countdown
     }
 
     return () => {
@@ -576,7 +576,8 @@ function PPChessGame() {
                       <LoadingBoxes />
                     </div>
                   ) : (
-                    <div>
+                    <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
+  <div className="w-full max-w-[90vw] sm:max-w-[400px]">
                       <PPChessBoardWithValidation
                         socket={socket}
                         roomID={roomID}
@@ -587,6 +588,7 @@ function PPChessGame() {
                         boardOrientation={boardOrientation}
                       />
                     </div>
+                  </div>
                   )}
                 </div>
                 

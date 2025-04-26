@@ -56,7 +56,7 @@ function ChessGame() {
       
       clockInterval.current = setInterval(() => {
         const now = Date.now();
-        const elapsed = (now - lastTickTime.current)*2.1/ 1000;
+        const elapsed = (now - lastTickTime.current)/ 1000; // Convert to seconds
         lastTickTime.current = now;
 
         if (isWhiteTurn) {
@@ -94,7 +94,7 @@ function ChessGame() {
             return newTime;
           });
         }
-      }, 200); // Update every 100ms for smoother countdown
+      }, 100); // Update every 100ms for smoother countdown
     }
 
     return () => {
@@ -484,7 +484,8 @@ function ChessGame() {
                       <LoadingBoxes />
                     </div>
                   ) : (
-                    <div>
+                    <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
+  <div className="w-full max-w-[90vw] sm:max-w-[400px]">
                       <ChessBoardWithValidation 
                         socket={socket} 
                         roomID={roomID} 
@@ -494,6 +495,7 @@ function ChessGame() {
                         boardOrientation={boardOrientation}
                       />
                     </div>
+                  </div>
                   )}
 
                 </div>
