@@ -197,11 +197,11 @@ io.on("connection", (socket) => {
         room.lastMoveTime = lastMoveTime;
         
         // Broadcast updated time to all clients in the room
-        io.to(roomID).emit("timeUpdate", {
-            whiteTime,
-            blackTime,
-            lastMoveTime
-        });
+        // io.to(roomID).emit("timeUpdate", {
+        //     whiteTime,
+        //     blackTime,
+        //     lastMoveTime
+        // });
     });
 
     socket.on("requestTimeSync", ({ roomID }) => {

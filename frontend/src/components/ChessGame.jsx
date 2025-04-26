@@ -169,12 +169,12 @@ function ChessGame() {
     });
     
     socket.on("timeUpdate", (timeData) => {
-      // setWhiteTime(timeData.whiteTime);
-      // setBlackTime(timeData.blackTime);
-      // setLastMoveTime(timeData.lastMoveTime);
-      // console.log("time updated")
+      setWhiteTime(timeData.whiteTime);
+      setBlackTime(timeData.blackTime);
+      setLastMoveTime(timeData.lastMoveTime);
+      console.log("time updated")
       
-      // lastTickTime.current = Date.now();
+      lastTickTime.current = Date.now();
     });
 
     socket.on("showMessage", (msg) => {
