@@ -13,19 +13,21 @@ export default function useLastMove(socket) {
     };
   }, [socket]);
 
-  function getSquareStyles() {
-    const styles = {};
-    if (lastMove.from) {
-      styles[lastMove.from] = {
-        boxShadow: 'inset 0 0 10px 3px rgba(255, 255, 0, 0.9)' // yellow highlight
-      };
-    }
-    if (lastMove.to) {
-      styles[lastMove.to] = {
-        boxShadow: 'inset 0 0 10px 3px rgba(255, 255, 0, 0.9)'
-      };
-    }
-    return styles;
+  function getSquareStyles() { 
+    const styles = {}; 
+    if (lastMove.from) { 
+      styles[lastMove.from] = { 
+        background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 255, 0, 0.2))',
+        boxShadow: 'inset 0 0 5px rgba(218, 165, 32, 0.7)'
+      }; 
+    } 
+    if (lastMove.to) { 
+      styles[lastMove.to] = { 
+        background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 255, 0, 0.2))',
+        boxShadow: 'inset 0 0 5px rgba(218, 165, 32, 0.7)'
+      }; 
+    } 
+    return styles; 
   }
 
   return { lastMove, getSquareStyles };
