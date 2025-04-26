@@ -100,7 +100,7 @@ function PPChessGame() {
             return newTime;
           });
         }
-      }, 100); // Update every 100ms for smoother countdown
+      }, 200); // Update every 100ms for smoother countdown
     }
 
     return () => {

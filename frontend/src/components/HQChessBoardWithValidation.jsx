@@ -1,7 +1,6 @@
 //@pranav take this and test HQChessBoardWithValidation
 import { Chessboard } from "react-chessboard";
-import { useState, useEffect } from "react";
-// In a backend script, for instance backend/index.mjs:
+import { useEffect, useState, useRef } from "react";// In a backend script, for instance backend/index.mjs:
 import { Chess } from '../../lib/chess.js';
 import { customPieces } from './CustomPieces.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
@@ -197,20 +196,38 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     
     const pieces = customPieces(playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare,socket,pieceTheme);
 
+
+    const containerRef = useRef(null);
+    const [boardSize, setBoardSize] = useState(400);
+
+    useEffect(() => {
+        const updateSize = () => {
+            if (containerRef.current) {
+                const size = Math.min(containerRef.current.offsetWidth, 400); 
+                setBoardSize(size);
+            }
+        };
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
+
+
     return (
-        <div className="flex justify-center items-center">
-            <div style={{ width: "400px", height: "400px" }}>     
-                <Chessboard
-                    position={game.fen()}
-                    onPieceDrop={onDrop}
-                    boardWidth={400}
-                    animationDuration={0}
-                    boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
-                    customPieces={pieces}
-                    customSquareStyles={getSquareStyles()}
-/>
-            </div>
-        </div>
+        <div className="flex justify-center items-center overflow-hidden" ref={containerRef}>
+    <div style={{ width: boardSize, height: boardSize }}>
+        <Chessboard
+            position={game.fen()}
+            onPieceDrop={onDrop}
+            boardWidth={boardSize}
+            animationDuration={0}
+            boardOrientation={(playerRole==="b" || boardOrientation === "black-below") ? "black" : "white"}
+            customPieces={pieces}
+            customSquareStyles={getSquareStyles()}
+        />
+    </div>
+</div>
+
     );
 }
 

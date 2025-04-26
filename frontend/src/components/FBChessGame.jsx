@@ -93,7 +93,7 @@ function FBChessGame() {
             return newTime;
           });
         }
-      }, 300); // Update every 100ms for smoother countdown
+      }, 200); // Update every 100ms for smoother countdown
     }
 
     return () => {

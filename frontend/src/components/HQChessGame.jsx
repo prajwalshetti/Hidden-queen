@@ -577,17 +577,20 @@ function HQChessGame() {
                       <LoadingBoxes />
                     </div>
                   ) : (
-                    <div>
-                      <HQChessBoardWithValidation
-                        socket={socket}
-                        roomID={roomID}
-                        playerRole={playerRole}
-                        boardState={boardState}
-                        hiddenQueenData={hiddenQueenData}
-                        gameEnded={gameEnded}
-                        boardOrientation={boardOrientation}
-                      />
-                    </div>
+                    <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
+  <div className="w-full max-w-[90vw] sm:max-w-[400px]">
+    <HQChessBoardWithValidation
+      socket={socket}
+      roomID={roomID}
+      playerRole={playerRole}
+      boardState={boardState}
+      hiddenQueenData={hiddenQueenData}
+      gameEnded={gameEnded}
+      boardOrientation={boardOrientation}
+    />
+  </div>
+</div>
+
                   )}
                 </div>
                 
