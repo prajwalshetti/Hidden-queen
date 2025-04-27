@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, time } from 'framer-motion';
 import ChessBoardWithValidation from './ChessBoardWithValidation';
 import { io } from "socket.io-client";
 import HiddenQueenRules from './HiddenQueenRules';
@@ -52,7 +52,7 @@ function ChessGame() {
 
     // Only start the clock if the game has started and not ended
     if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player") {
-      lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
+      // lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
       
       clockInterval.current = setInterval(() => {
         const now = Date.now();
@@ -169,12 +169,13 @@ function ChessGame() {
     });
     
     socket.on("timeUpdate", (timeData) => {
-      if(whiteTime>timeData.whiteTime)
+      if(blackTime >= timeData.blackTime && whiteTime>=timeData.whiteTime){
         setWhiteTime(timeData.whiteTime);
-      if(blackTime>timeData.blackTime)
         setBlackTime(timeData.blackTime);
+      }
       setLastMoveTime(timeData.lastMoveTime);
-
+      
+      // Reset the tick timer to prevent jumps
       lastTickTime.current = Date.now();
     });
 

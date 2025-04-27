@@ -487,10 +487,16 @@ socket.on("move", ({ move, roomID, from, to }) => {
         io.to(roomID).emit("lastMoveSquares", { from, to });
     }
 
-    io.to(roomID).emit("timeUpdate", {
+    // io.to(roomID).emit("timeUpdate", {
+    //     whiteTime: room.whiteTime,
+    //     blackTime: room.blackTime,
+    //     lastMoveTime: room.lastMoveTime
+    // });
+    io.to(roomID).emit("timeSync", {
         whiteTime: room.whiteTime,
         blackTime: room.blackTime,
-        lastMoveTime: room.lastMoveTime
+        lastMoveTime: room.lastMoveTime,
+        currentTurn: room.boardState.split(" ")[1]
     });
 });
 
