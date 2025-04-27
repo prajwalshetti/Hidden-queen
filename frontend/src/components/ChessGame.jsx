@@ -172,11 +172,12 @@ function ChessGame() {
       if(blackTime >= timeData.blackTime && whiteTime>=timeData.whiteTime){
         setWhiteTime(timeData.whiteTime);
         setBlackTime(timeData.blackTime);
-      }
-      setLastMoveTime(timeData.lastMoveTime);
+        setLastMoveTime(timeData.lastMoveTime);
       
       // Reset the tick timer to prevent jumps
       lastTickTime.current = Date.now();
+      }
+      
     });
 
     socket.on("showMessage", (msg) => {
