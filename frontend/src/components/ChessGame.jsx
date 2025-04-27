@@ -169,11 +169,12 @@ function ChessGame() {
     });
     
     socket.on("timeUpdate", (timeData) => {
-      setWhiteTime(timeData.whiteTime);
-      setBlackTime(timeData.blackTime);
+      if(whiteTime>timeData.whiteTime)
+        setWhiteTime(timeData.whiteTime);
+      if(blackTime>timeData.blackTime)
+        setBlackTime(timeData.blackTime);
       setLastMoveTime(timeData.lastMoveTime);
-      console.log("time updated")
-      
+
       lastTickTime.current = Date.now();
     });
 
