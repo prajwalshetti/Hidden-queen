@@ -369,12 +369,9 @@ io.on("connection", (socket) => {
             room.blackTime = 600;
             room.lastMoveTime = Date.now();
         
-            if (room.white) {
-                io.to(room.white).emit("timeSync", {
-                    whiteTime: room.whiteTime,
-                    blackTime: room.blackTime,
-                    lastMoveTime: room.lastMoveTime,
-                    currentTurn: room.boardState.split(" ")[1]
+            if (room.black) {
+                io.to(room.black).emit("timeSync", {
+                    whiteTime: room.whiteTime, blackTime: room.blackTime, lastMoveTime: room.lastMoveTime, currentTurn: room.boardState.split(" ")[1]
                 });
             }
         } else if (!room.black) {
@@ -387,10 +384,7 @@ io.on("connection", (socket) => {
         
             if (room.white) {
                 io.to(room.white).emit("timeSync", {
-                    whiteTime: room.whiteTime,
-                    blackTime: room.blackTime,
-                    lastMoveTime: room.lastMoveTime,
-                    currentTurn: room.boardState.split(" ")[1]
+                    whiteTime: room.whiteTime, blackTime: room.blackTime, lastMoveTime: room.lastMoveTime, currentTurn: room.boardState.split(" ")[1]
                 });
             }
         } else {
