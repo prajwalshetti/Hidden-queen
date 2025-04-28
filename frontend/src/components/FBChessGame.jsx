@@ -52,7 +52,7 @@ function FBChessGame() {
 
     // Only start the clock if the game has started and not ended
     if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player") {
-      lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
+      // lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
       clockInterval.current = setInterval(() => {
         const now = Date.now();
         const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds

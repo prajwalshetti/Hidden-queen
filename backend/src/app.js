@@ -365,10 +365,34 @@ io.on("connection", (socket) => {
             room.white = socket.id;
             room.whiteUsername = username || "Player";
             role = "w";
+            room.whiteTime = 600;
+            room.blackTime = 600;
+            room.lastMoveTime = Date.now();
+        
+            if (room.white) {
+                io.to(room.white).emit("timeSync", {
+                    whiteTime: room.whiteTime,
+                    blackTime: room.blackTime,
+                    lastMoveTime: room.lastMoveTime,
+                    currentTurn: room.boardState.split(" ")[1]
+                });
+            }
         } else if (!room.black) {
             room.black = socket.id;
             room.blackUsername = username || "Player";
             role = "b";
+            room.whiteTime = 600;
+            room.blackTime = 600;
+            room.lastMoveTime = Date.now();
+        
+            if (room.white) {
+                io.to(room.white).emit("timeSync", {
+                    whiteTime: room.whiteTime,
+                    blackTime: room.blackTime,
+                    lastMoveTime: room.lastMoveTime,
+                    currentTurn: room.boardState.split(" ")[1]
+                });
+            }
         } else {
             // Add as spectator
             room.spectators.push(socket.id);
@@ -649,7 +673,7 @@ socket.on("move", ({ move, roomID, from, to }) => {
                 delete rooms[roomID];
             }
 
-            if ((!room.white || !room.black)&&room.whiteTime===600&&room.blackTime===600) {
+            if (!room.white || !room.black) {
                 delete rooms[roomID];
             }
         }
