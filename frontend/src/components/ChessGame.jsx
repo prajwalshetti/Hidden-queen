@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, time } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ChessBoardWithValidation from './ChessBoardWithValidation';
 import { io } from "socket.io-client";
 import HiddenQueenRules from './HiddenQueenRules';
@@ -169,15 +169,12 @@ function ChessGame() {
     });
     
     socket.on("timeUpdate", (timeData) => {
-      if(blackTime >= timeData.blackTime && whiteTime>=timeData.whiteTime){
-        setWhiteTime(timeData.whiteTime);
-        setBlackTime(timeData.blackTime);
-        setLastMoveTime(timeData.lastMoveTime);
+      setWhiteTime(timeData.whiteTime);
+      setBlackTime(timeData.blackTime);
+      setLastMoveTime(timeData.lastMoveTime);
       
       // Reset the tick timer to prevent jumps
       lastTickTime.current = Date.now();
-      }
-      
     });
 
     socket.on("showMessage", (msg) => {
