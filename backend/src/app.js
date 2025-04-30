@@ -101,8 +101,10 @@ io.on("connection", (socket) => {
     socket.on("playOnline", ({ variantType }) => {
         if (waitingRooms[variantType]) {
           const roomId = waitingRooms[variantType];
-          socket.emit("generatedRoomId",  roomId );
           waitingRooms[variantType] = null;
+          console.log(socket.id," is trying to join ",roomId," where white is ",rooms[roomId].white);
+          if(socket.id!==rooms[roomId].white)
+          socket.emit("generatedRoomId",  roomId );
         } else {
           const roomId = generateRoomId()+"_"+variantType;
           waitingRooms[variantType] = roomId;
