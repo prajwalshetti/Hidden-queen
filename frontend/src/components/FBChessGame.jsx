@@ -10,6 +10,7 @@ import LoadingBoxes from './ui/LoadingBoxes';
 import FBChessBoardWithValidation from './FBChessBoardWithValidation';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
+import PlayOnlineButton from './ui/PlayOnlineButton';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -39,6 +40,9 @@ function FBChessGame() {
   const clockInterval = useRef(null);
   const lastTickTime = useRef(Date.now());
   const [lastMoveTime, setLastMoveTime] = useState(null);
+
+  const usernameRef = useRef(username);
+  useEffect(() => {usernameRef.current = username;}, [username]);
 
   const validateMode = useValidateChessMode();
 
@@ -176,6 +180,17 @@ function FBChessGame() {
       lastTickTime.current = Date.now();
     });
 
+    socket.on("generatedRoomId", (roomId) => {
+      let roomID=String(roomId)
+      console.log(roomID)
+      setRoomID(roomID);
+      socket.emit("joinRoom", { roomID, username });
+      setGameStarted(true);
+      localStorage.setItem('roomID', roomID);
+      
+      socket.emit("requestTimeSync", { roomID });
+    });
+
     socket.on("showMessage", (msg) => {
       setMessage(msg);
       setTimeout(() => setMessage(""), 10000);
@@ -192,6 +207,7 @@ function FBChessGame() {
       socket.off("timeUpdate");
       socket.off("showMessage");
       socket.off("replyToDrawReq");
+      socket.off("generatedRoomId");
     };
   }, []);
 
@@ -274,6 +290,11 @@ function FBChessGame() {
     }
   };
 
+  const handlePlayOnline=()=>{
+    console.log("Play Online pressed")
+    socket.emit("playOnline", {variantType:"FB"});
+  }
+
   const getPlayerName = (role) => {
     if (role === 'w') return whiteUsername || "White Player";
     else if (role === 'b') return blackUsername || "Black Player";
@@ -340,7 +361,7 @@ function FBChessGame() {
           {!gameStarted ? (
             <motion.div key="lobby" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }} className="space-y-6">
-              <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+              <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-6">
                 <h2 className="text-xl font-bold mb-4 text-purple-400">Set Your Username</h2>
                 <div className="flex items-center space-x-3">
                   <input type="text" value={usernameInput} onChange={(e) => setUsernameInput(e.target.value)}
@@ -364,8 +385,17 @@ function FBChessGame() {
                 )}
               </div>
               
-              <RoomCard joinRoom={joinRoom} roomIDSuffix={roomIDSuffix} />
-              
+              <div className="flex flex-col md:flex-row gap-6 w-full p-4">
+                {/* Play Online Button Component */}
+                <div className="w-full md:w-1/2 mb-6 md:mb-0">
+                  <PlayOnlineButton handlePlayOnline={handlePlayOnline} />
+                </div>
+
+                {/* Room Card Component */}
+                <div className="w-full md:w-1/2">
+                  <RoomCard joinRoom={joinRoom} roomIDSuffix={roomIDSuffix} />
+                </div>
+              </div>              
               <div className="mt-4">
                 <button onClick={() => setShowRules(!showRules)} 
                   className="bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg border border-gray-700 shadow-lg flex items-center space-x-2 transition-all duration-300 hover:shadow-purple-900/30 hover:shadow-lg">
