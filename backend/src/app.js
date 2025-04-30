@@ -110,6 +110,12 @@ io.on("connection", (socket) => {
             hqwstatus: room.hqwstatus,
             hqbstatus: room.hqbstatus
         });
+
+        io.to(roomID).emit("timeUpdate", {
+            whiteTime: room.whiteTime,
+            blackTime: room.blackTime,
+            lastMoveTime: room.lastMoveTime
+        });
     });    
 
     socket.on("revealHQ", ({ roomID, color }) => {
