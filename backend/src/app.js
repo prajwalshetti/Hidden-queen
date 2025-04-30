@@ -57,9 +57,18 @@ function updateBoardStateToQueen(boardString, selectedColumn,isWhite) {
         room.hqbstatus = 1; // Assigned
         console.log("Black Hidden Queen assigned to square: ", square);
     }
-
 }
 
+const waitingRooms = {HQ: null,PHANTOM: null,PP: null,FB: null};  
+
+function generateRoomId(length = 6) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -89,6 +98,18 @@ app.get("/",(req,res)=>{
 io.on("connection", (socket) => {
     console.log("New connection:", socket.id);
 
+    socket.on("playOnline", ({ variantType }) => {
+        if (waitingRooms[variantType]) {
+          const roomId = waitingRooms[variantType];
+          socket.emit("generatedRoomId",  roomId );
+          waitingRooms[variantType] = null;
+        } else {
+          const roomId = generateRoomId()+"_"+variantType;
+          waitingRooms[variantType] = roomId;
+          socket.emit("generatedRoomId",  roomId );
+        }
+      });
+      
     socket.on("changeToQueen", ({ roomID, index, isWhite }) => {
         console.log(`Received changeToQueen for room ${roomID} with index ${index}`);
         
@@ -642,6 +663,11 @@ socket.on("move", ({ move, roomID, from, to }) => {
         if (!room.white && !room.black) {
             delete rooms[roomID];
             console.log(`Room ${roomID} deleted (empty)`);
+            for (const variant in waitingRooms) {
+                if (waitingRooms[variant] === roomID) {
+                  waitingRooms[variant] = null;
+                }
+              }
         }
     });
 
@@ -676,6 +702,12 @@ socket.on("move", ({ move, roomID, from, to }) => {
             if (!room.white || !room.black) {
                 delete rooms[roomID];
             }
+
+            for (const variant in waitingRooms) {
+                if (waitingRooms[variant] === roomID) {
+                  waitingRooms[variant] = null;
+                }
+              }
         }
         
         // Clean up socket mappings
