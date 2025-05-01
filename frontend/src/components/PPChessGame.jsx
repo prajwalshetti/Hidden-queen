@@ -196,14 +196,7 @@ function PPChessGame() {
     socket.on("generatedRoomId", (roomId) => {
       let roomID=String(roomId)
       console.log(roomID)
-      setHiddenQueenSelectionPhase(true);
-      setRoomID(roomID);
-      socket.emit("joinRoom", { roomID, username });
-      setGameStarted(true);
-      localStorage.setItem('roomID', roomID);
-      
-      // Request time sync when joining a room
-      socket.emit("requestTimeSync", { roomID });
+      completeJoinRoom(roomID)
     });
 
     socket.on("showMessage", (msg) => {
@@ -315,6 +308,10 @@ function PPChessGame() {
   };
 
   const handlePlayOnline=()=>{
+    if (!username) {
+      setShowUsernameModal(true);
+      return;
+    }
     console.log("Play Online pressed")
     socket.emit("playOnline", {variantType:"PP"});
   }

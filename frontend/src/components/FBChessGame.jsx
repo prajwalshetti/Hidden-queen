@@ -183,12 +183,7 @@ function FBChessGame() {
     socket.on("generatedRoomId", (roomId) => {
       let roomID=String(roomId)
       console.log(roomID)
-      setRoomID(roomID);
-      socket.emit("joinRoom", { roomID, username });
-      setGameStarted(true);
-      localStorage.setItem('roomID', roomID);
-      
-      socket.emit("requestTimeSync", { roomID });
+      completeJoinRoom(roomID)
     });
 
     socket.on("showMessage", (msg) => {
@@ -291,6 +286,10 @@ function FBChessGame() {
   };
 
   const handlePlayOnline=()=>{
+    if (!username) {
+      setShowUsernameModal(true);
+      return;
+    }
     console.log("Play Online pressed")
     socket.emit("playOnline", {variantType:"FB"});
   }
