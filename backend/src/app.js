@@ -455,6 +455,12 @@ io.on("connection", (socket) => {
             hqwstatus:room.hqwstatus,
             hqbstatus:room.hqbstatus
         });
+
+        for (const variant in waitingRooms) {
+            if (waitingRooms[variant] === roomID) {
+              waitingRooms[variant] = null;
+            }
+          }
     });
 
     // Handle chat messages
