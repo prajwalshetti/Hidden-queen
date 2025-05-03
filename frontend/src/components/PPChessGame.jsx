@@ -11,6 +11,7 @@ import LoadingBoxes from './ui/LoadingBoxes';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 import PlayOnlineButton from './ui/PlayOnlineButton';
+import PoisonedPawnSelectionModal from './PoisonedPawnSelectionModal';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -542,34 +543,11 @@ function PPChessGame() {
                     </div>
                   </div>
 
-                  {hiddenQueenSelectionPhase && (playerRole === 'w' || playerRole === 'b') && (
-                    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-                      <div className="bg-gray-800 p-6 rounded-xl shadow-xl border border-purple-700 max-w-md w-full">
-                        <h2 className="text-2xl font-bold text-center mb-4 text-purple-400">
-                          Select Your Poisoned Pawn
-                        </h2>
-                        <p className="text-gray-300 mb-4">
-                          Choose which pawn will secretly be your poisoned pawn. It will move like a pawn but if captured by your opponent then you win the game.
-                        </p>
-                        <div className="grid grid-cols-8 gap-2 mb-4">
-                          {(playerRole === "b" ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]).map((col) => (
-                            <button
-                              key={col}
-                              onClick={() => handleHiddenQueenSelection(col)}
-                              className="bg-gray-700 hover:bg-purple-700 text-white py-4 rounded transition-colors"
-                            >
-                              {String.fromCharCode(96 + col)}
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-sm text-gray-400">
-                          {playerRole === 'w' 
-                            ? "Your pawns are on the 2nd rank (a2-h2)" 
-                            : "Your pawns are on the 7th rank (a7-h7)"}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                  <PoisonedPawnSelectionModal
+  isOpen={hiddenQueenSelectionPhase && (playerRole === 'w' || playerRole === 'b')}
+  playerRole={playerRole}
+  onSelect={handleHiddenQueenSelection}
+/>
                   
                   {isResigning && (
                     <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600">
