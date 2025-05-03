@@ -456,6 +456,7 @@ io.on("connection", (socket) => {
             hqbstatus:room.hqbstatus
         });
 
+        if(room.black==null)return;
         for (const variant in waitingRooms) {
             if (waitingRooms[variant] === roomID) {
               waitingRooms[variant] = null;
