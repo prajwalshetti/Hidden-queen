@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from "socket.io-client";
 import HiddenQueenRules from './HiddenQueenRules';
+import MorphedKingRules from './MKRules';
 import RoomCard from './Room';
 import { useNavigate } from 'react-router-dom';
 import ChatBox from './chat';
@@ -433,12 +434,12 @@ function MKChessGame() {
                 <button onClick={() => setShowRules(!showRules)} 
                   className="bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg border border-gray-700 shadow-lg flex items-center space-x-2 transition-all duration-300 hover:shadow-purple-900/30 hover:shadow-lg">
                   <span className="text-purple-400">{showRules ? "♟" : "♛"}</span>
-                  <span>{showRules ? "Hide Rules" : "Show Hidden Queen Rules"}</span>
+                  <span>{showRules ? "Hide Rules" : "Show Morphed King Rules"}</span>
                 </button>
                 
                 {showRules && (
                   <div style={{ transition: "all 0.3s ease", opacity: 1, height: "auto" }}>
-                    <HiddenQueenRules onClose={() => setShowRules(false)} />
+                    <MorphedKingRules onClose={() => setShowRules(false)} />
                   </div>
                 )}
               </div>

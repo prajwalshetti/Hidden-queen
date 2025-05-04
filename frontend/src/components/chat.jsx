@@ -8,19 +8,17 @@ const ChatBox = ({ socket, roomID, username, playerRole }) => {
 
   // Set up chat message handling
   useEffect(() => {
-    // First, clear existing listeners to prevent duplicates
+    // Clear previous listeners
     socket.off("chatMessage");
     socket.off("chatHistory");
-    
-    // Listen for new chat messages
+
     socket.on("chatMessage", (msg) => {
       setMessages(prevMessages => [...prevMessages, {
         ...msg,
         isOwnMessage: msg.username === username
       }]);
     });
-    
-    // Listen for chat history when joining a room
+
     socket.on("chatHistory", (history) => {
       const formattedHistory = history.map(msg => ({
         ...msg,
@@ -35,15 +33,6 @@ const ChatBox = ({ socket, roomID, username, playerRole }) => {
     };
   }, [socket, username]);
 
-  // Auto-scroll to bottom when messages change
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim()) {
@@ -51,56 +40,49 @@ const ChatBox = ({ socket, roomID, username, playerRole }) => {
         roomID,
         username,
         text: message,
-        playerRole: playerRole, // Include player role
+        playerRole: playerRole,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      
       socket.emit("sendMessage", chatMessage);
       setMessage('');
-      // Don't add message locally, wait for server to broadcast it back
     }
   };
 
-  // Determine chat box title based on player role
   const getChatTitle = () => {
-    if (playerRole === 'w' || playerRole === 'b') {
-      return "Player Chat";
-    } else {
-      return "Spectator Chat";
-    }
+    if (playerRole === 'w' || playerRole === 'b') return "Player Chat";
+    return "Spectator Chat";
   };
 
-  // Get appropriate chat description
   const getChatDescription = () => {
-    if (playerRole === 'w' || playerRole === 'b') {
-      return "Chat with your opponent";
-    } else {
-      return "Chat with other spectators";
-    }
+    if (playerRole === 'w' || playerRole === 'b') return "Chat with your opponent";
+    return "Chat with other spectators";
   };
 
   return (
     <motion.div
-      className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 h-full flex flex-col p-4"
-      initial={{ opacity: 0, x: 20 }}
+    className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 h-screen max-h-screen flex flex-col p-4"
+    initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4 }}
     >
       <div className="text-purple-400 font-bold mb-2 text-lg border-b border-gray-700 pb-2">
         {getChatTitle()}
       </div>
-      
+
       <div className="text-gray-500 text-xs mb-3 italic">
         {getChatDescription()}
       </div>
-      
-      <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mb-3 px-1">
+
+      <div
+        className="flex-grow overflow-y-auto flex flex-col-reverse scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 mb-3 px-1"
+        ref={messagesEndRef}
+      >
         {messages.length === 0 ? (
           <div className="text-gray-500 text-center py-4">
             No messages yet. Start the conversation!
           </div>
         ) : (
-          messages.map((msg, index) => (
+          [...messages].reverse().map((msg, index) => (
             <motion.div
               key={index}
               className={`mb-2 ${msg.isOwnMessage ? 'text-right' : ''}`}
@@ -109,8 +91,8 @@ const ChatBox = ({ socket, roomID, username, playerRole }) => {
               transition={{ duration: 0.3 }}
             >
               <div className={`inline-block max-w-xs rounded-lg px-3 py-2 ${
-                msg.isOwnMessage 
-                  ? 'bg-purple-800 text-white rounded-br-none' 
+                msg.isOwnMessage
+                  ? 'bg-purple-800 text-white rounded-br-none'
                   : 'bg-gray-700 text-gray-100 rounded-bl-none'
               }`}>
                 <div className="text-xs font-bold mb-1">
@@ -122,9 +104,8 @@ const ChatBox = ({ socket, roomID, username, playerRole }) => {
             </motion.div>
           ))
         )}
-        <div ref={messagesEndRef} />
       </div>
-      
+
       <form onSubmit={sendMessage} className="mt-auto">
         <div className="flex">
           <input

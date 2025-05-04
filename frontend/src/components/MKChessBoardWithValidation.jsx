@@ -1,7 +1,7 @@
 import { Chessboard } from "react-chessboard";
 import { useEffect, useState, useRef } from "react";// In a backend script, for instance backend/index.mjs:
 import { Chess } from '../../lib/chess.js';
-import { customPieces } from './CustomPieces.jsx';
+import { customPieces } from './CustomPiecesMK.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
@@ -193,7 +193,7 @@ function MKChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     
     // Custom pieces.
     
-    const pieces = customPieces(playerRole, hqwstatus, hqwsquare, hqbstatus, hqbsquare,socket,pieceTheme);
+    const pieces = customPieces(playerRole,socket,pieceTheme);
 
 
     const containerRef = useRef(null);
