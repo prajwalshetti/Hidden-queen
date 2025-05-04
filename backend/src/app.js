@@ -59,7 +59,7 @@ function updateBoardStateToQueen(boardString, selectedColumn,isWhite) {
     }
 }
 
-const waitingRooms = {HQ: null,PHANTOM: null,PP: null,FB: null};  
+const waitingRooms = {HQ: null,PHANTOM: null,PP: null,FB: null,MK:null};  
 
 function generateRoomId(length = 6) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -122,9 +122,9 @@ io.on("connection", (socket) => {
             return;
         }
         
-        if (roomID.endsWith('_HQ')) {
+        if (roomID.endsWith('_HQ')||roomID.endsWith('_MK')) {
             room.boardState = updateBoardStateToQueen(room.boardState, index, isWhite);
-        }
+        }        
         changeToQueen(roomID, isWhite, index)
         io.to(roomID).emit("boardState", room.boardState);
                 io.to(roomID).emit("playersHQ", {

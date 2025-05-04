@@ -12,6 +12,7 @@ export const useValidateChessMode = () => {
       "_HQ": "/hqchessgame",
       "_PP": "/ppchessgame",
       "_FB": "/fbchessgame",
+      "_MK":"/mkchessgame"
     };
 
     let matchedRoute = null;
