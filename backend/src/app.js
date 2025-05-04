@@ -59,6 +59,22 @@ function updateBoardStateToQueen(boardString, selectedColumn,isWhite) {
     }
 }
 
+function chooseTheRealKing(roomID, isWhite, pieceNumber) {
+    let boardState = rooms[roomID].boardState;
+    let parts = boardState.split(" ");
+    let boardPosition = parts[0];
+    let ranks = boardPosition.split("/");
+    
+    if (isWhite && pieceNumber == 8) ranks[7] = "RNBQRBNK";
+    else if (isWhite && pieceNumber == 1) ranks[7] = "KNBQRBNR";
+    else if (!isWhite && pieceNumber == 8) ranks[0] = "rnbqrbnk";
+    else if (!isWhite && pieceNumber == 1) ranks[0] = "knbqrbnr";
+
+    parts[0] = ranks.join("/");
+    return parts.join(" ");
+}
+
+  
 const waitingRooms = {HQ: null,PHANTOM: null,PP: null,FB: null,MK:null};  
 
 function generateRoomId(length = 6) {
@@ -199,6 +215,17 @@ io.on("connection", (socket) => {
             hqwstatus: room.hqwstatus,
             hqbstatus: room.hqbstatus,
         });
+    });
+
+    socket.on("choosingTheRealKing", ({ roomID, pieceNumber, isWhite }) => {
+        const room = rooms[roomID];
+        if (!room) {console.error("Room not found:", roomID);return;}     
+        room.boardState=chooseTheRealKing(roomID, isWhite, pieceNumber);
+        if (isWhite) {room.hqwsquare = "a1";room.hqwstatus = 1;} 
+        else {room.hqbsquare = "a1";room.hqbstatus = 1;}
+        io.to(roomID).emit("boardState", room.boardState);
+        io.to(roomID).emit("playersHQ", {hqwsquare: room.hqwsquare,hqbsquare: room.hqbsquare,hqwstatus: room.hqwstatus,hqbstatus: room.hqbstatus});
+        io.to(roomID).emit("timeUpdate", {whiteTime: room.whiteTime,blackTime: room.blackTime,lastMoveTime: room.lastMoveTime});
     });
 
     socket.on("capturePP", ({ roomID, color }) => {

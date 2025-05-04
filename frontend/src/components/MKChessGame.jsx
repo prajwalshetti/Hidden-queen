@@ -13,6 +13,7 @@ import PieceThemeSelector from './ui/PieceThemeSelector';
 import PlayOnlineButton from './ui/PlayOnlineButton';
 import HiddenQueenSelectionModal from './HiddenQueenSelectionModal';
 import MKChessBoardWithValidation from './MKChessBoardWithValidation';
+import MorphedKingsSelectionModal from './MorphedKingsSelectionModal';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -342,15 +343,8 @@ function MKChessGame() {
 
   // Handle hidden queen selection
   const handleHiddenQueenSelection = (col) => {
-    console.log("The pawn is selected on the column", col);
-    let file = String.fromCharCode(96 + col); // converts 1->a, 2->b, etc.
-    // For white, hidden queen pawn is on rank 2; for black, rank 7.
-    let rank = playerRole === 'w' ? "2" : "7";
-    const selectedSquare = file + rank;
-        
-    // Emit the event to the backend
-    socket.emit("changeToQueen", { roomID, index: col, isWhite: playerRole === 'w' });
-    
+    console.log(col);
+    socket.emit("choosingTheRealKing", { roomID, pieceNumber: col, isWhite: playerRole === 'w' });
     setHiddenQueenSelectionPhase(false);
   };
 
@@ -544,7 +538,7 @@ function MKChessGame() {
                     </div>
                   </div>
 
-                  <HiddenQueenSelectionModal
+                  <MorphedKingsSelectionModal
   isOpen={hiddenQueenSelectionPhase && (playerRole === 'w' || playerRole === 'b')}
   playerRole={playerRole}
   onSelect={handleHiddenQueenSelection}
