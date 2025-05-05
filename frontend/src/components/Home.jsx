@@ -27,7 +27,7 @@ function Home() {
     {
       id: 'morphed-kings',
       name: 'Morphed Kings',
-      imagePath: 'normal-chess-photo.jpg',
+      imagePath: 'morphed-kings-photo.jpg',
     },
     {
       id: 'football-chess',
