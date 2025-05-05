@@ -8,6 +8,7 @@ function Home() {
     if(varID=='hidden-queen') navigate('/hqchessGame')
     else if(varID=='poisoned-pawn') navigate('/ppchessGame')
     else if(varID=='football-chess') navigate('/fbchessGame')
+    else if(varID=='morphed-kings') navigate('/mkchessgame')
       
     else navigate('/chessGame');
   };
@@ -22,6 +23,11 @@ function Home() {
       id: 'poisoned-pawn',
       name: 'Poisoned Pawn',
       imagePath: 'poisoned-pawn-photo.jpg',
+    },
+    {
+      id: 'morphed-kings',
+      name: 'Morphed Kings',
+      imagePath: 'normal-chess-photo.jpg',
     },
     {
       id: 'football-chess',
