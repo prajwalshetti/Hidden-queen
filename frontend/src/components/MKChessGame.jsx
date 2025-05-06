@@ -117,7 +117,7 @@ function MKChessGame() {
         clearInterval(clockInterval.current);
       }
     };
-  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername, hqwsquare, hqbsquare]);
+  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername, hqwsquare, hqbsquare,connected]);
 
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
