@@ -74,7 +74,7 @@ function MKChessGame() {
         const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
         lastTickTime.current = now;
 
-        if (isWhiteTurn) {
+        if (isWhiteTurn&&connected) {
           setWhiteTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
             // Emit time update to keep server in sync
@@ -91,7 +91,7 @@ function MKChessGame() {
             
             return newTime;
           });
-        } else {
+        } else if(connected){
           setBlackTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
             // Emit time update to keep server in sync
@@ -149,6 +149,7 @@ function MKChessGame() {
     });
     
     socket.on("boardState", (state) => {
+      console.log("board state received")
       setBoardState(state);
       setIsWhiteTurn(state.split(" ")[1] === "w");
     });
@@ -181,6 +182,7 @@ function MKChessGame() {
     
     // New listeners for time synchronization
     socket.on("timeSync", (timeData) => {
+      console.log("time sync received")
       setWhiteTime(timeData.whiteTime);
       setBlackTime(timeData.blackTime);
       setLastMoveTime(timeData.lastMoveTime);
