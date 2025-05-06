@@ -623,6 +623,7 @@ function MKChessGame() {
       hiddenQueenData={hiddenQueenData}
       gameEnded={gameEnded}
       boardOrientation={boardOrientation}
+      isConnected={connected}
     />
   </div>
 </div>
