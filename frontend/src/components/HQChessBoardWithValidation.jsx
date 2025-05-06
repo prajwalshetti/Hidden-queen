@@ -6,7 +6,7 @@ import { customPieces } from './CustomPieces.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
-function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData,gameEnded, boardOrientation }) {
+function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hiddenQueenData,gameEnded, boardOrientation,isConnected }) {
     const { hqwsquare, hqbsquare, hqwstatus, hqbstatus, setHqwsquare, setHqbsquare, setHqwstatus, setHqbstatus } = hiddenQueenData;
     const [game, setGame] = useState(new Chess());
     const { pieceTheme, setPieceTheme } = usePieceTheme();
@@ -40,7 +40,7 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     }
 
     function onDrop(sourceSquare, targetSquare) {
-        if(gameEnded)return;
+        if(gameEnded||!isConnected)return;
         if (playerRole !== "w" && playerRole !== "b") return false;
         if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
     

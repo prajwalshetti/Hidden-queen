@@ -43,6 +43,7 @@ function HQChessGame() {
   const [boardOrientation,setBoardOrientation]=useState("white-below")
   const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus};
   const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
+  const [connected, setConnected] = useState(socket.connected);
 
   const usernameRef = useRef(username);
   useEffect(() => {usernameRef.current = username;}, [username]);
@@ -70,7 +71,7 @@ function HQChessGame() {
         const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
         lastTickTime.current = now;
 
-        if (isWhiteTurn) {
+        if (isWhiteTurn&&connected) {
           setWhiteTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
             // Emit time update to keep server in sync
@@ -87,7 +88,7 @@ function HQChessGame() {
             
             return newTime;
           });
-        } else {
+        } else if(connected){
           setBlackTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
             // Emit time update to keep server in sync
@@ -113,7 +114,7 @@ function HQChessGame() {
         clearInterval(clockInterval.current);
       }
     };
-  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername, hqwsquare, hqbsquare]);
+  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername, hqwsquare, hqbsquare,connected]);
 
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
@@ -208,6 +209,33 @@ function HQChessGame() {
     
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
 
+    socket.on("connect",    () => {
+      setConnected(true)
+      const savedRoomID = localStorage.getItem('roomID');
+      const savedRole = localStorage.getItem('playerRole');
+      const savedUsername = localStorage.getItem('username');
+      
+      if (savedUsername) setUsername(savedUsername);
+      
+      if (savedRoomID && savedRole) {
+        const isValidMode = validateMode(); 
+        if (isValidMode) {
+          setRoomID(savedRoomID);
+          setPlayerRole(savedRole);
+          setGameStarted(true);
+          
+          socket.emit("joinRoomBack", {
+            roomID: savedRoomID, 
+            savedRole, 
+            username: savedUsername || "Player"
+          });
+
+          socket.emit("requestTimeSync", { roomID: savedRoomID });
+        }
+      }
+    });
+    socket.on("disconnect", () => setConnected(false));
+
     return () => {
       socket.off("playerRole");
       socket.off("boardState");
@@ -220,6 +248,8 @@ function HQChessGame() {
       socket.off("showMessage");
       socket.off("replyToDrawReq");
       socket.off("generatedRoomId");
+      socket.off("connect");
+      socket.off("disconnect");
     };
   }, []);
 
@@ -497,51 +527,43 @@ function HQChessGame() {
               )}
                 
                 <div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-gray-700">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="bg-gray-700 px-4 py-2 rounded-lg">
-                      <span className="text-gray-400">Role:</span> 
-                      <span className="ml-2 font-bold text-purple-400">
-                        {playerRole === 'w' ? 'White' : playerRole === 'b' ? 'Black' : 'Spectator'}
-                      </span>
-                    </div>
+                <div className="flex justify-between items-center mb-4">
                     
-                    <div className="flex space-x-3">
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && hqbsquare !== null && hqwsquare !== null && (
-                        <button onClick={confirmResign}
-                          className="bg-red-700 hover:bg-red-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
-                          Resign
-                        </button>
-                      )}
-
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && hqbsquare !== null && hqwsquare !== null && (
-                        <button
-                        onClick={()=>socket.emit("drawReq", { roomID, color: playerRole })}
-                        className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
-                          Draw Req
+                    <div className="flex flex-row space-x-1 sm:space-y-0">
+                        {(playerRole === "spectator" || gameEnded || hqbsquare === null || hqwsquare === null) && (
+                          <button
+                            onClick={handleLeaveRoom}
+                            className="sm:w-auto bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-center"
+                          >
+                            Leave Room
                           </button>
-                      )}
-
-                      {(playerRole === "spectator" || gameEnded || hqbsquare === null || hqwsquare === null) && (
-                        <button onClick={handleLeaveRoom}
-                          className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300">
-                          Leave Room
-                        </button>
-                      )}
-
-                      {(gameEnded) && (
-                      <button onClick={()=>navigate("/dashboard/feedback")} className="px-1 py-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300">Give feedback</button>
-                      )}
-
-                    {playerRole === "spectator" && (
-                      <button
-                        onClick={toggleBoardOrientation}
-                        className="px-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300"
-                      >
-                        Flip Board
-                      </button>
-                    )}
+                        )}
+  
+                        {gameEnded && (
+                          <button
+                            onClick={() => navigate("/dashboard/feedback")}
+                            className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
+                          >
+                            Give Feedback
+                          </button>
+                        )}
+  
+                        {playerRole === "spectator" && !gameEnded && (
+                          <button
+                            onClick={toggleBoardOrientation}
+                            className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
+                          >
+                            Flip Board
+                          </button>
+                        )}
+                      </div>
+  
+  {                    (playerRole!="spectator"&&!gameEnded)&&(<div className={`flex items-center mb-2 sm:mb-0 ${connected ? "text-green-500" : "text-red-500"}`}>
+    <span className={`w-2 h-2 mr-2 rounded-full animate-pulse ${connected ? "bg-green-500" : "bg-red-500"}`} />
+    {connected ? "Connected" : "Disconnected"}
+  </div>)}
+  
                     </div>
-                  </div>
 
                   <HiddenQueenSelectionModal
   isOpen={hiddenQueenSelectionPhase && (playerRole === 'w' || playerRole === 'b')}
@@ -562,14 +584,25 @@ function HQChessGame() {
                       </div>
                     </div>
                   )}
-              {isReplyingToDrawReq && !gameEnded &&(
-                <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-between space-x-4">
-                <p className="text-white">Your opponent offered a draw</p>
-                <div className="flex space-x-2">
-                  <button onClick={() => socket.emit("drawGame", { roomID })} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Accept</button>
-                  <button onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Decline</button>
-                </div></div>
-              )}
+{isReplyingToDrawReq && !gameEnded && (
+  <div className="mb-4 p-3 sm:p-4 bg-gray-700 rounded-lg border border-gray-600 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:justify-between sm:space-x-4">
+    <p className="text-white text-center sm:text-left">Your opponent offered a draw</p>
+    <div className="flex flex-row space-x-2">
+      <button 
+        onClick={() => socket.emit("drawGame", { roomID })} 
+        className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
+      >
+        Accept
+      </button>
+      <button 
+        onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} 
+        className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
+      >
+        Decline
+      </button>
+    </div>
+  </div>
+)}
                   
                   {message && (
                       <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>
@@ -592,6 +625,7 @@ function HQChessGame() {
       hiddenQueenData={hiddenQueenData}
       gameEnded={gameEnded}
       boardOrientation={boardOrientation}
+      isConnected={connected}
     />
   </div>
 </div>
@@ -604,6 +638,30 @@ function HQChessGame() {
                 ) : (
                   <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded&&whiteUsername !== "White Player" &&blackUsername !== "Black Player"&& hqwsquare !== null && hqbsquare !== null} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
                 )}
+                                {playerRole !== "spectator" && !gameEnded && !isResigning && hqbsquare !== null && hqwsquare !== null && (
+                  <div className="flex flex-row gap-2 justify-end w-full">
+                    <button 
+                      onClick={confirmResign}
+                      className="bg-red-700 hover:bg-red-600 active:bg-red-800 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-sm sm:text-base">
+                      Resign
+                    </button>
+                    
+                    <button
+                      onClick={() => socket.emit("drawReq", { roomID, color: playerRole })}
+                      className="bg-orange-700 hover:bg-orange-600 active:bg-orange-800 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-sm sm:text-base">
+                      Draw Request
+                    </button>
+                  </div>
+                )}
+                <div style={{ border: '1px solid #444', borderRadius: '10px', padding: '12px 16px', backgroundColor: '#1e1e1e', maxWidth: '100%', fontSize: '16px', lineHeight: '1.5', color: '#f1f1f1', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', margin: '10px auto', wordWrap: 'break-word' }}>
+  <p style={{ margin: '0 0 8px 0', color: '#ffa726', fontWeight: 'bold' }}>⚠️ Rules:</p>
+  <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'disc' }}>
+    <li>Both players have <strong>1 real king</strong> and <strong>2 rooks morphed as kings</strong>.</li>
+    <li>Capture the <strong>real king</strong> to win.</li>
+    <li><strong>King capture</strong> is allowed.</li>
+    <li>No <strong>checkmate</strong>, no <strong>en passant</strong>.</li>
+  </ul>
+</div>
               </div>
               
               <div className="h-full">
