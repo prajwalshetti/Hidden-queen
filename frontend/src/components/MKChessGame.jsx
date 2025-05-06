@@ -214,7 +214,28 @@ function MKChessGame() {
 
     socket.on("connect",    () => {
       setConnected(true)
-      window.location.reload();
+      const savedRoomID = localStorage.getItem('roomID');
+      const savedRole = localStorage.getItem('playerRole');
+      const savedUsername = localStorage.getItem('username');
+      
+      if (savedUsername) setUsername(savedUsername);
+      
+      if (savedRoomID && savedRole) {
+        const isValidMode = validateMode(); 
+        if (isValidMode) {
+          setRoomID(savedRoomID);
+          setPlayerRole(savedRole);
+          setGameStarted(true);
+          
+          socket.emit("joinRoomBack", {
+            roomID: savedRoomID, 
+            savedRole, 
+            username: savedUsername || "Player"
+          });
+
+          socket.emit("requestTimeSync", { roomID: savedRoomID });
+        }
+      }
     });
     socket.on("disconnect", () => setConnected(false));
 
