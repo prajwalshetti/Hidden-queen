@@ -35,6 +35,8 @@ function FBChessGame() {
   const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
   const [roomIDSuffix,setRoomIDSuffix]=useState("_FB")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
+  const [connected, setConnected] = useState(socket.connected);
+  
   
   // Clock references and state
   const clockInterval = useRef(null);
@@ -62,7 +64,7 @@ function FBChessGame() {
         const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
         lastTickTime.current = now;
 
-        if (isWhiteTurn) {
+        if (isWhiteTurn&&connected) {
           setWhiteTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
             // Emit time update to keep server in sync
@@ -79,7 +81,7 @@ function FBChessGame() {
             
             return newTime;
           });
-        } else {
+        } else if(connected) {
           setBlackTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
             // Emit time update to keep server in sync
@@ -105,7 +107,7 @@ function FBChessGame() {
         clearInterval(clockInterval.current);
       }
     };
-  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername]);
+  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername,connected]);
 
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
@@ -192,6 +194,34 @@ function FBChessGame() {
     });
 
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
+
+    socket.on("connect",    () => {
+      setConnected(true)
+      const savedRoomID = localStorage.getItem('roomID');
+      const savedRole = localStorage.getItem('playerRole');
+      const savedUsername = localStorage.getItem('username');
+      
+      if (savedUsername) setUsername(savedUsername);
+      
+      if (savedRoomID && savedRole) {
+        const isValidMode = validateMode(); 
+        if (isValidMode) {
+          setRoomID(savedRoomID);
+          setPlayerRole(savedRole);
+          setGameStarted(true);
+          
+          socket.emit("joinRoomBack", {
+            roomID: savedRoomID, 
+            savedRole, 
+            username: savedUsername || "Player"
+          });
+
+          socket.emit("requestTimeSync", { roomID: savedRoomID });
+        }
+      }
+    });
+    socket.on("disconnect", () => setConnected(false));
+
     return () => {
       socket.off("playerRole");
       socket.off("boardState");
@@ -203,6 +233,8 @@ function FBChessGame() {
       socket.off("showMessage");
       socket.off("replyToDrawReq");
       socket.off("generatedRoomId");
+      socket.off("connect");
+      socket.off("disconnect");
     };
   }, []);
 
@@ -447,51 +479,43 @@ function FBChessGame() {
 
                 
                 <div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-gray-700">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="bg-gray-700 px-4 py-2 rounded-lg">
-                      <span className="text-gray-400">Role:</span> 
-                      <span className="ml-2 font-bold text-purple-400">
-                        {playerRole === 'w' ? 'White' : playerRole === 'b' ? 'Black' : 'Spectator'}
-                      </span>
-                    </div>
+                <div className="flex justify-between items-center mb-4">
                     
-                    <div className="flex space-x-3">
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
-                        <button onClick={confirmResign}
-                          className="bg-red-700 hover:bg-red-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
-                          Resign
-                        </button>
-                      )}
-
-                      {playerRole !== "spectator" && !gameEnded && !isResigning && blackUsername !== "Black Player" && whiteUsername !== "White Player" && (
-                        <button
-                        onClick={()=>socket.emit("drawReq", { roomID, color: playerRole })}
-                        className="bg-orange-700 hover:bg-orange-600 text-white py-1 px-3 rounded-lg shadow-lg transition-all duration-300">
-                          Draw req
-                        </button>
-                      )}
-
-                      {(playerRole === "spectator" || gameEnded || blackUsername === "Black Player" || whiteUsername === "White Player") && (
-                        <button onClick={handleLeaveRoom}
-                          className="bg-purple-700 hover:bg-purple-600 text-white py-2 px-2 rounded-lg shadow-lg transition-all duration-300">
-                          Leave Room
-                        </button>
-                      )}
-                      
-                      {(gameEnded) && (
-                      <button onClick={()=>navigate("/dashboard/feedback")} className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300">Give feedback</button>
-                      )}
-                      
-                  {playerRole === "spectator" && (
-                    <button
-                      onClick={toggleBoardOrientation}
-                      className="px-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300"
-                    >
-                      Flip Board
-                    </button>
-                  )}
+                    <div className="flex flex-row space-x-1 sm:space-y-0">
+                        {(playerRole === "spectator" || gameEnded ) && (
+                          <button
+                            onClick={handleLeaveRoom}
+                            className="sm:w-auto bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-center"
+                          >
+                            Leave Room
+                          </button>
+                        )}
+  
+                        {gameEnded && (
+                          <button
+                            onClick={() => navigate("/dashboard/feedback")}
+                            className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
+                          >
+                            Give Feedback
+                          </button>
+                        )}
+  
+                        {playerRole === "spectator" && !gameEnded && (
+                          <button
+                            onClick={toggleBoardOrientation}
+                            className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
+                          >
+                            Flip Board
+                          </button>
+                        )}
+                      </div>
+  
+  {                    (playerRole!="spectator"&&!gameEnded)&&(<div className={`flex items-center mb-2 sm:mb-0 ${connected ? "text-green-500" : "text-red-500"}`}>
+    <span className={`w-2 h-2 mr-2 rounded-full animate-pulse ${connected ? "bg-green-500" : "bg-red-500"}`} />
+    {connected ? "Connected" : "Disconnected"}
+  </div>)}
+  
                     </div>
-                  </div>
                   
                   {isResigning && (
                     <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600">
@@ -507,14 +531,25 @@ function FBChessGame() {
                     </div>
                   )}
 
-{isReplyingToDrawReq && !gameEnded &&(
-                <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-between space-x-4">
-                <p className="text-white">Your opponent offered a draw</p>
-                <div className="flex space-x-2">
-                  <button onClick={() => socket.emit("drawGame", { roomID })} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Accept</button>
-                  <button onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">Decline</button>
-                </div></div>
-              )}
+{isReplyingToDrawReq && !gameEnded && (
+  <div className="mb-4 p-3 sm:p-4 bg-gray-700 rounded-lg border border-gray-600 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:justify-between sm:space-x-4">
+    <p className="text-white text-center sm:text-left">Your opponent offered a draw</p>
+    <div className="flex flex-row space-x-2">
+      <button 
+        onClick={() => socket.emit("drawGame", { roomID })} 
+        className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
+      >
+        Accept
+      </button>
+      <button 
+        onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} 
+        className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
+      >
+        Decline
+      </button>
+    </div>
+  </div>
+)}
                   
                   {message && (
                       <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>
@@ -536,6 +571,7 @@ function FBChessGame() {
                         boardState={boardState} 
                         gameEnded={gameEnded} 
                         boardOrientation={boardOrientation}
+                        isConnected={connected}
                       />
                     </div>
                   </div>
@@ -548,6 +584,31 @@ function FBChessGame() {
                   ) : (
                   <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded&& whiteUsername !== "White Player" && blackUsername !== "Black Player"} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
                 )}
+                {playerRole !== "spectator" && !gameEnded && !isResigning && (
+                  <div className="flex flex-row gap-2 justify-end w-full">
+                    <button 
+                      onClick={confirmResign}
+                      className="bg-red-700 hover:bg-red-600 active:bg-red-800 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-sm sm:text-base">
+                      Resign
+                    </button>
+                    
+                    <button
+                      onClick={() => socket.emit("drawReq", { roomID, color: playerRole })}
+                      className="bg-orange-700 hover:bg-orange-600 active:bg-orange-800 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-sm sm:text-base">
+                      Draw Request
+                    </button>
+                  </div>
+                )}
+                <div style={{ border: '1px solid #444', borderRadius: '10px', padding: '12px 16px', backgroundColor: '#1e1e1e', maxWidth: '100%', fontSize: '16px', lineHeight: '1.5', color: '#f1f1f1', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', margin: '10px auto', wordWrap: 'break-word' }}>
+  <p style={{ margin: '0 0 8px 0', color: '#29b6f6', fontWeight: 'bold' }}>⚽ Football Chess Rules:</p>
+  <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'disc' }}>
+    <li>Standard chess moves apply to all pieces.</li>
+    <li>Your goal is to land any piece on your opponent's <strong>goal zones</strong>: <strong>e8 or d8</strong> (if you're White), or <strong>e1 or d1</strong> (if you're Black).</li>
+    <li>Reaching a goal zone instantly <strong>wins the game</strong>.</li>
+    <li><strong>No checkmate</strong> or draw — the game continues until a goal is scored.</li>
+  </ul>
+</div>
+
               </div>
               
               <div className="h-full">

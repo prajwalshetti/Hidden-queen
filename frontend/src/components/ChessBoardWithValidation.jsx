@@ -8,7 +8,7 @@ import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
-function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation }) {
+function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded,boardOrientation,isConnected }) {
     const [game, setGame] = useState(new Chess());
     const { pieceTheme, setPieceTheme } = usePieceTheme();
     const { getSquareStyles } = useLastMove(socket);
@@ -20,7 +20,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
     }, [boardState]);
 
     function onDrop(sourceSquare, targetSquare) {
-        if(gameEnded)return;
+        if(gameEnded||!isConnected)return;
         if (playerRole !== "w" && playerRole !== "b") return false;
         if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
 
