@@ -234,6 +234,7 @@ function MKChessGame() {
           });
 
           socket.emit("requestTimeSync", { roomID: savedRoomID });
+          socket.emit("refreshBoardState", { roomID: savedRoomID });
         }
       }
     });

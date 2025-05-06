@@ -85,7 +85,7 @@ function MKChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                 return true;
             }
     
-            // setGame(new Chess(game.fen()));
+            setGame(new Chess(game.fen()));
             socket.emit("move", { move: game.fen(), roomID, from: sourceSquare, to: targetSquare });
 
             if (game.isCheckmate()) {
