@@ -14,6 +14,7 @@ import FBChessGame from './components/FBChessGame';
 import FeedbackForm from './components/Feedback';
 import Settings from './components/Settings';
 import MKChessGame from './components/MKChessGame';
+import { Analytics } from '@vercel/analytics/react';
 function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -34,6 +35,7 @@ function App() {
           <Route path="settings" element={<Settings />} /> 
         </Route>
       </Routes>
+      <Analytics />
     </BrowserRouter>
   );
 }
