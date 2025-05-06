@@ -283,10 +283,6 @@ io.on("connection", (socket) => {
         delete rooms[roomID];
     });
 
-    socket.on("refreshBoardState", ({ roomID }) => {
-        if (!rooms[roomID]) return;
-        socket.emit("boardState", rooms[roomID].boardState);
-    });
     // Checkmate handler
     socket.on("checkmated", ({ roomID, winner }) => {
         const message = `Checkmate. ${winner === "w" ? "White" : "Black"} wins.`;
