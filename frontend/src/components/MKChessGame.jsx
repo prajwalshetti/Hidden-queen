@@ -651,6 +651,15 @@ function MKChessGame() {
                     </button>
                   </div>
                 )}
+<div style={{ border: '1px solid #444', borderRadius: '10px', padding: '12px 16px', backgroundColor: '#1e1e1e', maxWidth: '100%', fontSize: '16px', lineHeight: '1.5', color: '#f1f1f1', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', margin: '10px auto', wordWrap: 'break-word' }}>
+  <p style={{ margin: '0 0 8px 0', color: '#ffa726', fontWeight: 'bold' }}>⚠️ Rules:</p>
+  <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'disc' }}>
+    <li>Both players have <strong>1 real king</strong> and <strong>2 rooks morphed as kings</strong>.</li>
+    <li>Capture the <strong>real king</strong> to win.</li>
+    <li><strong>King capture</strong> is allowed.</li>
+    <li>No <strong>checkmate</strong>, no <strong>en passant</strong>.</li>
+  </ul>
+</div>
               </div>
 
               

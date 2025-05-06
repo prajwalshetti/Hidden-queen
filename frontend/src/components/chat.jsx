@@ -60,7 +60,7 @@ const ChatBox = ({ socket, roomID, username, playerRole }) => {
 
   return (
     <motion.div
-    className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 h-screen max-h-screen flex flex-col p-4"
+    className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 sm:h-screen sm:max-h-screen h-96 max-h-screen flex flex-col p-4"
     initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4 }}
