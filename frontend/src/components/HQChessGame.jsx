@@ -657,11 +657,9 @@ function HQChessGame() {
   <p style={{ margin: '0 0 8px 0', color: '#ab47bc', fontWeight: 'bold' }}>👑 Hidden Queen Chess Rules:</p>
   <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'disc' }}>
     <li>Each player secretly picks one pawn to be their <strong>Hidden Queen</strong>.</li>
-    <li>It appears as a normal pawn to the opponent.</li>
-    <li>The Hidden Queen can move like a pawn or a queen.</li>
-    <li>Using queen-like movement <strong>reveals</strong> its identity permanently.</li>
-    <li><strong>En Passant</strong> is not allowed in this variant.</li>
-    <li>Victory is achieved by <strong>capturing the king</strong>, not checkmate.</li>
+    <li>It appears as a normal pawn to the opponent until you make a queen-like move.</li>
+    <li>Capture the king to win</li>
+    <li>No En Passant, No checkmate</li>
   </ul>
 </div>
 

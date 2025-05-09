@@ -602,10 +602,9 @@ function FBChessGame() {
                 <div style={{ border: '1px solid #444', borderRadius: '10px', padding: '12px 16px', backgroundColor: '#1e1e1e', maxWidth: '100%', fontSize: '16px', lineHeight: '1.5', color: '#f1f1f1', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', margin: '10px auto', wordWrap: 'break-word' }}>
   <p style={{ margin: '0 0 8px 0', color: '#29b6f6', fontWeight: 'bold' }}>⚽ Football Chess Rules:</p>
   <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'disc' }}>
-    <li>Standard chess moves apply to all pieces.</li>
     <li>Your goal is to land any piece on your opponent's <strong>goal zones</strong>: <strong>e8 or d8</strong> (if you're White), or <strong>e1 or d1</strong> (if you're Black).</li>
     <li>Reaching a goal zone instantly <strong>wins the game</strong>.</li>
-    <li><strong>No checkmate</strong> or draw — the game continues until a goal is scored.</li>
+    <li>Checkmate, resignation, and timeout are still valid win conditions.</li>
   </ul>
 </div>
 

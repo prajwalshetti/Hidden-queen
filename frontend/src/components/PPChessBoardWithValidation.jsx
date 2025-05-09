@@ -43,7 +43,7 @@ function PPChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                 socket.emit("changeHQSquare", {
                     roomID,
                     color: playerRole,
-                    newSquare: targetSquare
+                    newSquare: (move.promotion)?"z1":targetSquare
                 });
             }
             console.log(move);

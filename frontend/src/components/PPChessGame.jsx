@@ -657,9 +657,9 @@ function PPChessGame() {
                 <div style={{ border: '1px solid #444', borderRadius: '10px', padding: '12px 16px', backgroundColor: '#1e1e1e', maxWidth: '100%', fontSize: '16px', lineHeight: '1.5', color: '#f1f1f1', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', margin: '10px auto', wordWrap: 'break-word' }}>
   <p style={{ margin: '0 0 8px 0', color: '#ef5350', fontWeight: 'bold' }}>♟️ Poisoned Pawn Chess Rules:</p>
   <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'disc' }}>
-    <li>Each player secretly selects one <strong>poisoned pawn</strong> before the game begins.</li>
-    <li><strong>Capturing the poisoned pawn</strong> results in an <strong>instant loss</strong>.</li>
-    <li>The poisoned pawn behaves like a normal pawn which will be not known to opponent.</li>
+  <li>Each player secretly picks one pawn to be their <strong>Poisoned Pawn</strong>.</li>
+  <li><strong>Capturing the poisoned pawn</strong> results in an <strong>instant loss</strong>.</li>
+    <li>If the poisoned pawn promotes it loses its power.</li>
     <li>Checkmate, resignation, and timeout are still valid win conditions.</li>
   </ul>
 </div>
