@@ -1,64 +1,140 @@
 import { NavLink } from "react-router-dom";
 import { Home, Info, BookOpen, MessageSquare, Menu, X, Settings } from 'lucide-react';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Handle scroll effect for navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('nav')) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [menuOpen]);
 
   const NavItem = ({ to, children, end = false }) => (
     <NavLink
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+        `flex items-center gap-2 px-4 py-3 md:py-2 rounded-lg transition-all duration-200 ${
           isActive
             ? "text-blue-400 bg-gray-800 shadow-md font-semibold"
-            : "text-white hover:text-blue-400 hover:bg-gray-700"
+            : "text-white hover:text-blue-300 hover:bg-gray-700"
         }`
       }
-      onClick={() => setMenuOpen(false)} // close menu on click
+      onClick={() => setMenuOpen(false)}
     >
       {children}
     </NavLink>
   );
+  
+  // Mobile Bottom Tab NavItem
+  const MobileTabItem = ({ to, icon, label, end = false }) => (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        `flex flex-col items-center justify-center px-2 py-1 transition-all duration-200 ${
+          isActive
+            ? "text-blue-400 font-medium"
+            : "text-gray-400"
+        }`
+      }
+      onClick={() => setMenuOpen(false)}
+    >
+      {icon}
+      <span className="text-xs mt-1">{label}</span>
+    </NavLink>
+  );
 
   return (
-    <nav className="top-0 z-50 w-full backdrop-blur-sm bg-gray-900 border-b border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <>
+      {/* Main Navbar */}
+      <nav className={`fixed top-0 left-0 right-0 z-[100] border-b border-gray-700 transition-all duration-300 ${
+        scrolled
+          ? "bg-gray-900 shadow-lg shadow-black/20"
+          : "bg-gray-900"
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
 
-          {/* Mobile toggle button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="text-white focus:outline-none"
-            >
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile toggle button */}
+            <div className="md:hidden">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(!menuOpen);
+                }}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white focus:outline-none"
+                aria-label="Toggle menu"
+              >
+                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center space-x-1">
+              <NavItem to="/dashboard" end><Home className="w-4 h-4" /><span>Home</span></NavItem>
+              <NavItem to="/dashboard/rules"><BookOpen className="w-4 h-4" /><span>Rules</span></NavItem>
+              <NavItem to="/dashboard/about"><Info className="w-4 h-4" /><span>About</span></NavItem>
+              <NavItem to="/dashboard/feedback"><MessageSquare className="w-4 h-4" /><span>Feedback</span></NavItem>
+              <NavItem to="/dashboard/settings"><Settings className="w-4 h-4" /><span>Settings</span></NavItem>
+            </div>
+
+            {/* Logo/Brand */}
+            {/* <div className="md:hidden flex items-center">
+              <span className="text-blue-400 font-bold text-xl">Phantom Chess</span>
+            </div> */}
           </div>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center space-x-1">
-            <NavItem to="/dashboard" end><Home className="w-4 h-4" /><span>Home</span></NavItem>
-            <NavItem to="/dashboard/rules"><BookOpen className="w-4 h-4" /><span>Rules</span></NavItem>
-            <NavItem to="/dashboard/about"><Info className="w-4 h-4" /><span>About</span></NavItem>
-            <NavItem to="/dashboard/feedback"><MessageSquare className="w-4 h-4" /><span>Feedback</span></NavItem>
-            <NavItem to="/dashboard/settings"><Settings className="w-4 h-4" /><span>Settings</span></NavItem>
+          {/* Mobile slide-in menu */}
+          <div className={`md:hidden fixed left-0 top-16 bottom-0 w-64 z-[101] transition-transform duration-300 ease-in-out ${
+            menuOpen ? 'translate-x-0' : '-translate-x-full'
+          } bg-gray-900`}> 
+            <div className="flex flex-col space-y-1 p-4 h-full">
+              <NavItem to="/dashboard" end><Home className="w-5 h-5" /><span className="text-lg">Home</span></NavItem>
+              <NavItem to="/dashboard/rules"><BookOpen className="w-5 h-5" /><span className="text-lg">Rules</span></NavItem>
+              <NavItem to="/dashboard/about"><Info className="w-5 h-5" /><span className="text-lg">About</span></NavItem>
+              <NavItem to="/dashboard/feedback"><MessageSquare className="w-5 h-5" /><span className="text-lg">Feedback</span></NavItem>
+              <NavItem to="/dashboard/settings"><Settings className="w-5 h-5" /><span className="text-lg">Settings</span></NavItem>
+            </div>
           </div>
         </div>
-
-        {/* Mobile dropdown nav */}
-        {menuOpen && (
-          <div className="md:hidden flex flex-col space-y-1 pb-4">
-            <NavItem to="/dashboard" end><Home className="w-4 h-4" /><span>Home</span></NavItem>
-            <NavItem to="/dashboard/rules"><BookOpen className="w-4 h-4" /><span>Rules</span></NavItem>
-            <NavItem to="/dashboard/about"><Info className="w-4 h-4" /><span>About</span></NavItem>
-            <NavItem to="/dashboard/feedback"><MessageSquare className="w-4 h-4" /><span>Feedback</span></NavItem>
-            <NavItem to="/dashboard/settings"><Settings className="w-4 h-4" /><span>Settings</span></NavItem>
-          </div>
-        )}
-      </div>
-    </nav>
+      </nav>
+      
+      {/* Spacer for fixed navbar */}
+      <div className="sm:h-16"></div>
+      
+      {/* Mobile Bottom Tabs */}
+      {/* <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-800 shadow-lg shadow-black/50 z-[100] bg-gray-900">
+        <div className="grid grid-cols-5 h-16">
+          <MobileTabItem to="/dashboard" icon={<Home className="w-5 h-5" />} label="Home" end />
+          <MobileTabItem to="/dashboard/rules" icon={<BookOpen className="w-5 h-5" />} label="Rules" />
+          <MobileTabItem to="/dashboard/about" icon={<Info className="w-5 h-5" />} label="About" />
+          <MobileTabItem to="/dashboard/feedback" icon={<MessageSquare className="w-5 h-5" />} label="Feedback" />
+          <MobileTabItem to="/dashboard/settings" icon={<Settings className="w-5 h-5" />} label="Settings" />
+        </div>
+      </div> */}
+      
+      {/* Bottom spacer */}
+      <div className="md:hidden h-16"></div>
+    </>
   );
 }
 

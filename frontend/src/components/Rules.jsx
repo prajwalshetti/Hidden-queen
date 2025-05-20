@@ -24,7 +24,7 @@ const cards = [
   { 
     id: 3, 
     title: "Football Chess", 
-    description: "Reach your opponent's goal squares to win!",
+    description: "Reach your opponent's goal squares with any of your piece to win!",
     icon: Flag,
     color: "border-green-500"
   },
@@ -44,56 +44,57 @@ export default function ChessVariants() {
     setActiveVariant(null);
   };
   
-  return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      {/* Header */}
-      <div className={`text-center mb-10 transition-all duration-300`}>
-          <h1 className="text-6xl font-bold pb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
-            How to play?
-          </h1>
-          <div className="h-1 w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto"></div>
-        </div>
-      
-      {/* Cards */}
-      <div className="flex flex-wrap justify-center gap-6 p-6">
-        {cards.map((card) => (
-          <motion.div
-            key={card.id}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="cursor-pointer"
-            onClick={() => openRules(card.id)}
-          >
-            <Card className={`w-80 h-44 border ${card.color} bg-gray-800 rounded-xl shadow-lg`}>
-              <CardContent className="p-6 flex flex-col h-full justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <card.icon size={24} />
-                    <h2 className="text-xl font-bold">{card.title}</h2>
-                  </div>
-                  <p className="text-gray-300">{card.description}</p>
-                </div>
-                
-                <div className="flex justify-end mt-4">
-                  <span className="text-sm text-blue-400 flex items-center gap-1">
-                    View rules
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 18l6-6-6-6"/>
-                    </svg>
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-      
-      {/* Rules Modals */}
-      {showRules && activeVariant === 1 && <HiddenQueenRules onClose={closeRules} />}
-      {showRules && activeVariant === 2 && <PoisonedPawnRules onClose={closeRules} />}
-      {showRules && activeVariant === 3 && <FootballChessRules onClose={closeRules} />}
+return (
+  <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-8">
+    {/* Header */}
+    <div className="text-center mb-8 sm:mb-10 transition-all duration-300">
+      <h1 className="text-6xl sm:text-6xl font-bold pb-4 sm:pb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
+        How to play?
+      </h1>
+      <div className="mt-2 h-1 w-24 sm:w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto"></div>
     </div>
-  );
+  
+    {/* Cards */}
+    <div className="flex flex-wrap justify-center gap-4 sm:gap-6 p-4 sm:p-6">
+      {cards.map((card) => (
+        <motion.div
+          key={card.id}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="cursor-pointer"
+          onClick={() => openRules(card.id)}
+        >
+          <Card className={`w-full sm:w-80 h-auto sm:h-44 border ${card.color} bg-gray-800 rounded-xl shadow-lg`}>
+            <CardContent className="p-4 sm:p-6 flex flex-col h-full justify-between">
+              <div>
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                  <card.icon size={20} />
+                  <h2 className="text-lg sm:text-xl font-bold">{card.title}</h2>
+                </div>
+                <p className="text-sm sm:text-base text-gray-300">{card.description}</p>
+              </div>
+              
+              <div className="flex justify-end mt-3 sm:mt-4">
+                <span className="text-xs sm:text-sm text-blue-400 flex items-center gap-1">
+                  View rules
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+    </div>
+    
+    {/* Rules Modals */}
+    {showRules && activeVariant === 1 && <HiddenQueenRules onClose={closeRules} />}
+    {showRules && activeVariant === 2 && <PoisonedPawnRules onClose={closeRules} />}
+    {showRules && activeVariant === 3 && <FootballChessRules onClose={closeRules} />}
+  </div>
+);
+
 }
 
 // Hidden Queen Rules Modal (Colorful & Animated)
