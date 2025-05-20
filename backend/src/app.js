@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 
 const app = express();
 const url = process.env.FRONT_END_URL;
+const newurl = process.env.FRONT_END_URL_NEW;
 const boardString="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 // Helper function to update the board string
@@ -89,7 +90,7 @@ function generateRoomId(length = 6) {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: url,
+        origin: [url,newurl],
         methods: ["GET", "POST"],
         allowedHeaders: ["Content-Type"],
         credentials: true,
