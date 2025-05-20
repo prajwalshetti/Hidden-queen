@@ -468,7 +468,7 @@ function ChessGame() {
                 <div className="flex justify-between items-center mb-4">
                     
                     <div className="flex flex-row space-x-1 sm:space-y-0">
-                        {(playerRole === "spectator" || gameEnded) && (
+                        {(playerRole === "spectator" || gameEnded || whiteUsername === "White Player" || blackUsername === "Black Player") && (
                           <button
                             onClick={handleLeaveRoom}
                             className="sm:w-auto bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-center"
@@ -571,7 +571,7 @@ function ChessGame() {
                 )}
               
 
-              {playerRole !== "spectator" && !gameEnded && !isResigning && (
+              {playerRole !== "spectator" && !gameEnded && !isResigning &&whiteUsername !== "White Player" && blackUsername !== "Black Player"&& (
                   <div className="flex flex-row gap-2 justify-end w-full">
                     <button 
                       onClick={confirmResign}
