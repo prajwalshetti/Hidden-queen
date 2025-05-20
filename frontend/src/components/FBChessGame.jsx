@@ -11,6 +11,7 @@ import FBChessBoardWithValidation from './FBChessBoardWithValidation';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 import PlayOnlineButton from './ui/PlayOnlineButton';
+import GameStartNotification from './GameStartNotification';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -36,7 +37,7 @@ function FBChessGame() {
   const [roomIDSuffix,setRoomIDSuffix]=useState("_FB")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
   const [connected, setConnected] = useState(socket.connected);
-  
+  const [showGameStartNotification, setShowGameStartNotification] = useState(false);  
   
   // Clock references and state
   const clockInterval = useRef(null);
@@ -156,6 +157,11 @@ function FBChessGame() {
       localStorage.removeItem('roomID');
       localStorage.removeItem('playerRole');
     });
+
+    socket.on("showStartedScreenInFB", (msg) => {
+      setShowGameStartNotification(true);
+      const timer = setTimeout(() => {setShowGameStartNotification(false);}, 2000);
+    });
     
     socket.on("playersInfo", (info) => {
       if (info.whiteUsername) setWhiteUsername(info.whiteUsername);
@@ -235,6 +241,7 @@ function FBChessGame() {
       socket.off("generatedRoomId");
       socket.off("connect");
       socket.off("disconnect");
+      socket.off("showStartedScreenInFB");
     };
   }, []);
 
@@ -562,19 +569,29 @@ function FBChessGame() {
                       <LoadingBoxes />
                     </div>
                   ) : (
-                    <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
+// Parent component structure
+<div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
   <div className="w-full max-w-[90vw] sm:max-w-[400px]">
-                      <FBChessBoardWithValidation
-                        socket={socket} 
-                        roomID={roomID} 
-                        playerRole={playerRole} 
-                        boardState={boardState} 
-                        gameEnded={gameEnded} 
-                        boardOrientation={boardOrientation}
-                        isConnected={connected}
-                      />
-                    </div>
-                  </div>
+    <div className="relative"> {/* This wrapper is crucial for positioning */}
+      {/* The chessboard component */}
+      <FBChessBoardWithValidation
+        socket={socket} 
+        roomID={roomID} 
+        playerRole={playerRole} 
+        boardState={boardState} 
+        gameEnded={gameEnded} 
+        boardOrientation={boardOrientation}
+        isConnected={connected}
+      />
+      
+      {/* The notification will be positioned relative to this container */}
+      <GameStartNotification 
+        isVisible={showGameStartNotification} 
+        onClose={() => setShowGameStartNotification(false)} 
+      />
+    </div>
+  </div>
+</div>
                   )}
 
                 </div>
@@ -618,6 +635,8 @@ function FBChessGame() {
           )}
         </AnimatePresence>
       </motion.div>
+      
+      {/* <GameStartNotification isVisible={showGameStartNotification} onClose={() => setShowGameStartNotification(false)} /> */}
     </div>
   );
 }

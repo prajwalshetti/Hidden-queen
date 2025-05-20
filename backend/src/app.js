@@ -119,7 +119,6 @@ io.on("connection", (socket) => {
         if (waitingRooms[variantType]) {
           const roomId = waitingRooms[variantType];
           waitingRooms[variantType] = null;
-          console.log(socket.id," is trying to join ",roomId," where white is ",rooms[roomId].white);
           if(socket.id!==rooms[roomId].white)
           socket.emit("generatedRoomId",  roomId );
         } else {
@@ -490,6 +489,7 @@ io.on("connection", (socket) => {
               waitingRooms[variant] = null;
             }
           }
+        if(role==='b')io.to(roomID).emit("showStartedScreenInFB")
     });
 
     // Handle chat messages
