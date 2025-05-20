@@ -305,7 +305,7 @@ function FBChessGame() {
     setWhiteTime(600);
     setBlackTime(600);
     
-    navigate('/dashboard');
+    navigate('/');
   };
 
   const handleTimeUp = (color) => {
@@ -493,7 +493,7 @@ function FBChessGame() {
   
                         {gameEnded && (
                           <button
-                            onClick={() => navigate("/dashboard/feedback")}
+                            onClick={() => navigate("/feedback")}
                             className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
                           >
                             Give Feedback

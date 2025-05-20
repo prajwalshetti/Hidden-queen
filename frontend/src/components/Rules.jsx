@@ -250,7 +250,7 @@ function HiddenQueenRules({ onClose }) {
         <div className="flex justify-center mt-6">
           <motion.button 
             className="px-6 py-3 text-xl bg-yellow-300 text-gray-900 font-bold rounded-lg"
-            onClick={()=>{navigate("/dashboard")}}
+            onClick={()=>{navigate("/")}}
             whileHover={{ scale: 1.1, backgroundColor: "#FBBF24" }}
             whileTap={{ scale: 0.95 }}
             
@@ -416,7 +416,7 @@ function PoisonedPawnRules({ onClose }) {
         <div className="flex justify-center mt-6">
           <motion.button 
             className="px-6 py-3 text-xl bg-green-300 text-gray-900 font-bold rounded-lg"
-            onClick={()=>{navigate("/dashboard")}}
+            onClick={()=>{navigate("/")}}
             whileHover={{ scale: 1.1, backgroundColor: "#6EE7B7" }}
             whileTap={{ scale: 0.95 }}
           >
@@ -582,7 +582,7 @@ function FootballChessRules({ onClose }) {
         <div className="flex justify-center mt-6">
           <motion.button 
             className="px-6 py-3 text-xl bg-blue-300 text-gray-900 font-bold rounded-lg"
-            onClick={()=>{navigate("/dashboard")}}
+            onClick={()=>{navigate("/")}}
             whileHover={{ scale: 1.1, backgroundColor: "#93C5FD" }}
             whileTap={{ scale: 0.95 }}
           >

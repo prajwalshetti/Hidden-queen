@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import {BrowserRouter,Route, Routes} from "react-router-dom"; 
+import {BrowserRouter, Route, Routes, Navigate} from "react-router-dom"; 
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
@@ -15,19 +15,21 @@ import FeedbackForm from './components/Feedback';
 import Settings from './components/Settings';
 import MKChessGame from './components/MKChessGame';
 import { Analytics } from '@vercel/analytics/react';
+
 function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
-        <Route path="/" element={<Register />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/chessGame" element={<ChessGame />} />
         <Route path="/hqchessGame" element={<HQChessGame />} />
         <Route path="/ppchessGame" element={<PPChessGame />} />
         <Route path="/fbchessgame" element={<FBChessGame />} />
         <Route path="/mkchessgame" element={<MKChessGame />} />
-        {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
-        <Route path="/dashboard" element={<Dashboard />}>
+        {/* Added dashboard route that redirects to root */}
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Dashboard />}>
           <Route index element={<Home />} />
           <Route path="rules" element={<Rules />} /> 
           <Route path="about" element={<About />} /> 

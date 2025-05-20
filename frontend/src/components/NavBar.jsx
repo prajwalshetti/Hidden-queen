@@ -90,17 +90,12 @@ function NavBar() {
 
             {/* Desktop nav */}
             <div className="hidden md:flex items-center space-x-1">
-              <NavItem to="/dashboard" end><Home className="w-4 h-4" /><span>Home</span></NavItem>
-              <NavItem to="/dashboard/rules"><BookOpen className="w-4 h-4" /><span>Rules</span></NavItem>
-              <NavItem to="/dashboard/about"><Info className="w-4 h-4" /><span>About</span></NavItem>
-              <NavItem to="/dashboard/feedback"><MessageSquare className="w-4 h-4" /><span>Feedback</span></NavItem>
-              <NavItem to="/dashboard/settings"><Settings className="w-4 h-4" /><span>Settings</span></NavItem>
+              <NavItem to="/" end><Home className="w-4 h-4" /><span>Home</span></NavItem>
+              <NavItem to="/rules"><BookOpen className="w-4 h-4" /><span>Rules</span></NavItem>
+              <NavItem to="/about"><Info className="w-4 h-4" /><span>About</span></NavItem>
+              <NavItem to="/feedback"><MessageSquare className="w-4 h-4" /><span>Feedback</span></NavItem>
+              <NavItem to="/settings"><Settings className="w-4 h-4" /><span>Settings</span></NavItem>
             </div>
-
-            {/* Logo/Brand */}
-            {/* <div className="md:hidden flex items-center">
-              <span className="text-blue-400 font-bold text-xl">Phantom Chess</span>
-            </div> */}
           </div>
 
           {/* Mobile slide-in menu */}
@@ -108,11 +103,11 @@ function NavBar() {
             menuOpen ? 'translate-x-0' : '-translate-x-full'
           } bg-gray-900`}> 
             <div className="flex flex-col space-y-1 p-4 h-full">
-              <NavItem to="/dashboard" end><Home className="w-5 h-5" /><span className="text-lg">Home</span></NavItem>
-              <NavItem to="/dashboard/rules"><BookOpen className="w-5 h-5" /><span className="text-lg">Rules</span></NavItem>
-              <NavItem to="/dashboard/about"><Info className="w-5 h-5" /><span className="text-lg">About</span></NavItem>
-              <NavItem to="/dashboard/feedback"><MessageSquare className="w-5 h-5" /><span className="text-lg">Feedback</span></NavItem>
-              <NavItem to="/dashboard/settings"><Settings className="w-5 h-5" /><span className="text-lg">Settings</span></NavItem>
+              <NavItem to="/" end><Home className="w-5 h-5" /><span className="text-lg">Home</span></NavItem>
+              <NavItem to="/rules"><BookOpen className="w-5 h-5" /><span className="text-lg">Rules</span></NavItem>
+              <NavItem to="/about"><Info className="w-5 h-5" /><span className="text-lg">About</span></NavItem>
+              <NavItem to="/feedback"><MessageSquare className="w-5 h-5" /><span className="text-lg">Feedback</span></NavItem>
+              <NavItem to="/settings"><Settings className="w-5 h-5" /><span className="text-lg">Settings</span></NavItem>
             </div>
           </div>
         </div>
@@ -120,17 +115,6 @@ function NavBar() {
       
       {/* Spacer for fixed navbar */}
       <div className="sm:h-16"></div>
-      
-      {/* Mobile Bottom Tabs */}
-      {/* <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-800 shadow-lg shadow-black/50 z-[100] bg-gray-900">
-        <div className="grid grid-cols-5 h-16">
-          <MobileTabItem to="/dashboard" icon={<Home className="w-5 h-5" />} label="Home" end />
-          <MobileTabItem to="/dashboard/rules" icon={<BookOpen className="w-5 h-5" />} label="Rules" />
-          <MobileTabItem to="/dashboard/about" icon={<Info className="w-5 h-5" />} label="About" />
-          <MobileTabItem to="/dashboard/feedback" icon={<MessageSquare className="w-5 h-5" />} label="Feedback" />
-          <MobileTabItem to="/dashboard/settings" icon={<Settings className="w-5 h-5" />} label="Settings" />
-        </div>
-      </div> */}
       
       {/* Bottom spacer */}
       <div className="md:hidden h-16"></div>
