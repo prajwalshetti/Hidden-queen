@@ -278,6 +278,8 @@ io.on("connection", (socket) => {
     });
 
     socket.on("kingCaptured", ({ roomID, winner }) => {
+        if(!rooms[roomID])return;
+        const room=rooms[roomID];
         const message = `King Captured. ${winner === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
         io.to(roomID).emit("showMessage", message);
@@ -286,6 +288,9 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("kingNull","b");
         else
         io.to(roomID).emit("kingNull","w");
+        if(room.hqwstatus===1)room.hqwstatus=2;
+        if(room.hqbstatus===1)room.hqbstatus=2;
+        io.to(roomID).emit("playersHQ", {hqwsquare: room.hqwsquare,hqbsquare: room.hqbsquare,hqwstatus: room.hqwstatus,hqbstatus: room.hqbstatus});
         delete rooms[roomID];
     });
 
@@ -532,6 +537,8 @@ io.on("connection", (socket) => {
                 io.to(spectatorId).emit("chatMessage", message);
             });
         }
+        // if(senderRole==='w'&&room.playerMessages.length === 1)io.to(room.black).emit("showMessage","Black wants to chat!")
+        // if(senderRole==='b'&&room.playerMessages.length === 1)io.to(room.white).emit("showMessage","White wants to chat!")
     });
 
     // Handle username updates
@@ -587,9 +594,14 @@ socket.on("move", ({ move, roomID, from, to }) => {
 
         // Draw handler
         socket.on("drawGame", ({ roomID }) => {
+            if(!rooms[roomID])return;
+            const room=rooms[roomID];
             const message = "The game ended in a draw.";
             io.to(roomID).emit("gameOver", message);
             io.to(roomID).emit("showMessage", message);
+            if(room.hqwstatus===1)room.hqwstatus=2;
+            if(room.hqbstatus===1)room.hqbstatus=2;
+            io.to(roomID).emit("playersHQ", {hqwsquare: room.hqwsquare,hqbsquare: room.hqbsquare,hqwstatus: room.hqwstatus,hqbstatus: room.hqbstatus});
             delete rooms[roomID];
         });
 
@@ -609,6 +621,7 @@ socket.on("move", ({ move, roomID, from, to }) => {
     //room not destoryed
     socket.on("resign", ({ roomID }) => {
         if (!rooms[roomID]) return;
+        const room=rooms[roomID];
 
         const { white, black } = rooms[roomID];
         if (socket.id === white) {
@@ -640,6 +653,9 @@ socket.on("move", ({ move, roomID, from, to }) => {
                 io.to(spectatorId).emit("gameOver", "Black resigned. White wins.");
             });
         }
+        if(room.hqwstatus===1)room.hqwstatus=2;
+        if(room.hqbstatus===1)room.hqbstatus=2;
+        io.to(roomID).emit("playersHQ", {hqwsquare: room.hqwsquare,hqbsquare: room.hqbsquare,hqwstatus: room.hqwstatus,hqbstatus: room.hqbstatus});
         delete rooms[roomID];
     });
 
