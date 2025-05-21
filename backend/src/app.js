@@ -155,6 +155,8 @@ io.on("connection", (socket) => {
             blackTime: room.blackTime,
             lastMoveTime: room.lastMoveTime
         });
+
+        if(room.hqwsquare!==null&&room.hqbsquare!==null)io.to(roomID).emit("showMessage","Game started!")
     });    
 
     socket.on("revealHQ", ({ roomID, color }) => {
@@ -226,6 +228,7 @@ io.on("connection", (socket) => {
         io.to(roomID).emit("boardState", room.boardState);
         io.to(roomID).emit("playersHQ", {hqwsquare: room.hqwsquare,hqbsquare: room.hqbsquare,hqwstatus: room.hqwstatus,hqbstatus: room.hqbstatus});
         io.to(roomID).emit("timeUpdate", {whiteTime: room.whiteTime,blackTime: room.blackTime,lastMoveTime: room.lastMoveTime});
+        if(room.hqwsquare!==null&&room.hqbsquare!==null)io.to(roomID).emit("showMessage","Game started!")
     });
 
     socket.on("capturePP", ({ roomID, color }) => {
@@ -493,7 +496,8 @@ io.on("connection", (socket) => {
               waitingRooms[variant] = null;
             }
           }
-        if(role==='b')io.to(roomID).emit("showStartedScreenInFB")
+
+        if(role==='b'&& (roomID.endsWith('_PHANTOM') || roomID.endsWith('_FB')))io.to(roomID).emit("showMessage","Game started!")
     });
 
     // Handle chat messages
