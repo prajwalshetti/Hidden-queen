@@ -43,7 +43,8 @@ function PPChessGame() {
   const [boardOrientation,setBoardOrientation]=useState("white-below")
   const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus};
   const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
-    const [connected, setConnected] = useState(socket.connected);
+  const [middleMessage,setMiddleMessage]=useState("");
+  const [connected, setConnected] = useState(socket.connected);
   
   const usernameRef = useRef(username);
   useEffect(() => {usernameRef.current = username;}, [username]);
@@ -203,8 +204,8 @@ function PPChessGame() {
     });
 
     socket.on("showMessage", (msg) => {
-      setMessage(msg);
-      setTimeout(() => setMessage(""), 10000);
+      setTimeout(() => setMiddleMessage(msg), 200);
+      setTimeout(() => setMiddleMessage(""), 2000);
     });
 
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
@@ -315,6 +316,7 @@ function PPChessGame() {
     setPlayerRole("");
     setBoardState(boardString);
     setMessage("");
+    setMiddleMessage("");
     setGameEnded(false);
     
     // Reset clock
@@ -616,8 +618,10 @@ function PPChessGame() {
                       <LoadingBoxes />
                     </div>
                   ) : (
-                    <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
-  <div className="w-full max-w-[90vw] sm:max-w-[400px]">
+                  <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
+                    <div className="w-full max-w-[90vw] sm:max-w-[400px]">
+                      <div className="relative"> {/* This wrapper is crucial for positioning */}
+                        {/* The chessboard component */}
                       <PPChessBoardWithValidation
                         socket={socket}
                         roomID={roomID}
@@ -627,12 +631,22 @@ function PPChessGame() {
                         gameEnded={gameEnded}
                         boardOrientation={boardOrientation}
                         isConnected={connected}
-
                       />
+                        
+                  {middleMessage && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className={`p-4 rounded-lg border-2 shadow-lg backdrop-blur-sm max-w-[80%] text-center font-mediumtransition-all duration-300 transform scale-105
+                        ${gameEnded ? 'bg-yellow-800/70 text-yellow-50 border-yellow-400 shadow-yellow-900/50': 'bg-green-900/70 text-green-50 border-green-400 shadow-green-900/50' }`}
+                      >
+                          <div className="text-wrap text-2xl md:text-lg">{middleMessage}</div>
+                      </div>
+                    </div>
+                  )}
+                      </div>
                     </div>
                   </div>
-                  )}
-                </div>
+                    )}
+                  </div>
                 
                 {(playerRole==="b"||boardOrientation === "black-below") ? (
                   <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded&& whiteUsername !== "White Player" && blackUsername !== "Black Player"&&hqwsquare!==null&&hqbsquare!==null} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />

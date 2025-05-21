@@ -190,8 +190,8 @@ function ChessGame() {
     });
 
     socket.on("showMessage", (msg) => {
-      setMiddleMessage(msg);
-      setTimeout(() => setMiddleMessage(""), 3000);
+      setTimeout(() => setMiddleMessage(msg), 200);
+      setTimeout(() => setMiddleMessage(""), 2000);
     });
 
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
@@ -568,7 +568,7 @@ function ChessGame() {
     <div className={`p-4 rounded-lg border-2 shadow-lg backdrop-blur-sm max-w-[80%] text-center font-mediumtransition-all duration-300 transform scale-105
       ${gameEnded ? 'bg-yellow-800/70 text-yellow-50 border-yellow-400 shadow-yellow-900/50': 'bg-green-900/70 text-green-50 border-green-400 shadow-green-900/50' }`}
     >
-      <div className="text-lg">{middleMessage}</div>
+      <div className="text-wrap text-2xl md:text-lg">{middleMessage}</div>
     </div>
   </div>
 )}

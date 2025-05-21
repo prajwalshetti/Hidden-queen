@@ -44,6 +44,7 @@ function HQChessGame() {
   const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus};
   const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
   const [connected, setConnected] = useState(socket.connected);
+  const [middleMessage,setMiddleMessage]=useState("");
 
   const usernameRef = useRef(username);
   useEffect(() => {usernameRef.current = username;}, [username]);
@@ -203,8 +204,8 @@ function HQChessGame() {
     });
 
     socket.on("showMessage", (msg) => {
-      setMessage(msg);
-      setTimeout(() => setMessage(""), 10000);
+      setTimeout(() => setMiddleMessage(msg), 200);
+      setTimeout(() => setMiddleMessage(""), 2000);
     });
     
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
@@ -324,6 +325,7 @@ function HQChessGame() {
     setPlayerRole("");
     setBoardState(boardString);
     setMessage("");
+    setMiddleMessage("");
     setGameEnded(false);
     
     // Reset clock
@@ -616,19 +618,32 @@ function HQChessGame() {
                     </div>
                   ) : (
                     <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
-  <div className="w-full max-w-[90vw] sm:max-w-[400px]">
-    <HQChessBoardWithValidation
-      socket={socket}
-      roomID={roomID}
-      playerRole={playerRole}
-      boardState={boardState}
-      hiddenQueenData={hiddenQueenData}
-      gameEnded={gameEnded}
-      boardOrientation={boardOrientation}
-      isConnected={connected}
-    />
-  </div>
-</div>
+                      <div className="w-full max-w-[90vw] sm:max-w-[400px]">
+                        <div className="relative"> {/* This wrapper is crucial for positioning */}
+                          {/* The chessboard component */}
+                        <HQChessBoardWithValidation
+                          socket={socket}
+                          roomID={roomID}
+                          playerRole={playerRole}
+                          boardState={boardState}
+                          hiddenQueenData={hiddenQueenData}
+                          gameEnded={gameEnded}
+                          boardOrientation={boardOrientation}
+                          isConnected={connected}
+                        />
+                          
+                    {middleMessage && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className={`p-4 rounded-lg border-2 shadow-lg backdrop-blur-sm max-w-[80%] text-center font-mediumtransition-all duration-300 transform scale-105
+                          ${gameEnded ? 'bg-yellow-800/70 text-yellow-50 border-yellow-400 shadow-yellow-900/50': 'bg-green-900/70 text-green-50 border-green-400 shadow-green-900/50' }`}
+                        >
+                          <div className="text-wrap text-2xl md:text-lg">{middleMessage}</div>
+                        </div>
+                      </div>
+                    )}
+                        </div>
+                      </div>
+                    </div>
 
                   )}
                 </div>

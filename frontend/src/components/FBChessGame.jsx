@@ -194,10 +194,10 @@ function FBChessGame() {
       completeJoinRoom(roomID)
     });
 
-    socket.on("showMessage", (msg) => {
-      setMessage(msg);
-      setTimeout(() => setMessage(""), 10000);
-    });
+    // socket.on("showMessage", (msg) => {
+    //   setMessage(msg);
+    //   setTimeout(() => setMessage(""), 10000);
+    // });
 
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
 
