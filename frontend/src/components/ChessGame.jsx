@@ -21,6 +21,7 @@ function ChessGame() {
   const [boardState, setBoardState] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [gameStarted, setGameStarted] = useState(false);
   const [message, setMessage] = useState("");
+  const [middleMessage,setMiddleMessage]=useState("");
   const [showRules, setShowRules] = useState(true);
   const [isResigning, setIsResigning] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
@@ -189,8 +190,8 @@ function ChessGame() {
     });
 
     socket.on("showMessage", (msg) => {
-      setMessage(msg);
-      setTimeout(() => setMessage(""), 10000);
+      setMiddleMessage(msg);
+      setTimeout(() => setMiddleMessage(""), 3000);
     });
 
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
@@ -299,6 +300,7 @@ function ChessGame() {
     setPlayerRole("");
     setBoardState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     setMessage("");
+    setMiddleMessage("");
     setGameEnded(false);
     
     // Reset clock
@@ -547,19 +549,32 @@ function ChessGame() {
                       <LoadingBoxes />
                     </div>
                   ) : (
-                    <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
+<div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
   <div className="w-full max-w-[90vw] sm:max-w-[400px]">
-                      <ChessBoardWithValidation 
-                        socket={socket} 
-                        roomID={roomID} 
-                        playerRole={playerRole} 
-                        boardState={boardState} 
-                        gameEnded={gameEnded} 
-                        boardOrientation={boardOrientation}
-                        isConnected={connected}
-                      />
-                    </div>
-                  </div>
+    <div className="relative"> {/* This wrapper is crucial for positioning */}
+      {/* The chessboard component */}
+      <ChessBoardWithValidation
+        socket={socket}
+        roomID={roomID}
+        playerRole={playerRole}
+        boardState={boardState}
+        gameEnded={gameEnded}
+        boardOrientation={boardOrientation}
+        isConnected={connected}
+      />
+      
+{middleMessage && (
+  <div className="absolute inset-0 flex items-center justify-center">
+    <div className={`p-4 rounded-lg border-2 shadow-lg backdrop-blur-sm max-w-[80%] text-center font-mediumtransition-all duration-300 transform scale-105
+      ${gameEnded ? 'bg-yellow-800/70 text-yellow-50 border-yellow-400 shadow-yellow-900/50': 'bg-green-900/70 text-green-50 border-green-400 shadow-green-900/50' }`}
+    >
+      <div className="text-lg">{middleMessage}</div>
+    </div>
+  </div>
+)}
+    </div>
+  </div>
+</div>
                   )}
 
                 </div>
@@ -586,16 +601,6 @@ function ChessGame() {
                     </button>
                   </div>
                 )}
-
-{/* <div style={{ border: '1px solid #444', borderRadius: '10px', padding: '12px 16px', backgroundColor: '#1e1e1e', maxWidth: '100%', fontSize: '16px', lineHeight: '1.5', color: '#f1f1f1', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', margin: '10px auto', wordWrap: 'break-word' }}>
-  <p style={{ margin: '0 0 8px 0', color: '#ffa726', fontWeight: 'bold' }}>⚠️ Rules:</p>
-  <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'disc' }}>
-    <li>Both players have <strong>1 real king</strong> and <strong>2 rooks morphed as kings</strong>.</li>
-    <li>Capture the <strong>real king</strong> to win.</li>
-    <li><strong>King capture</strong> is allowed.</li>
-    <li>No <strong>checkmate</strong>, no <strong>en passant</strong>.</li>
-  </ul>
-</div> */}
 </div>
               
               <div className="h-full">

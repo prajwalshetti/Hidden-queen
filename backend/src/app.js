@@ -233,6 +233,7 @@ io.on("connection", (socket) => {
         if (!room) return;
         const message = `Poisoned pawn captured. ${color === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
+                io.to(roomID).emit("showMessage", message);
         delete rooms[roomID];
     });
 
@@ -241,6 +242,7 @@ io.on("connection", (socket) => {
         if (!room) return;
         const message = `Goal scored. ${color === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
+        io.to(roomID).emit("showMessage", message);
         delete rooms[roomID];
     });
 
@@ -275,6 +277,7 @@ io.on("connection", (socket) => {
     socket.on("kingCaptured", ({ roomID, winner }) => {
         const message = `King Captured. ${winner === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
+        io.to(roomID).emit("showMessage", message);
 
         if(winner==="w")
         io.to(roomID).emit("kingNull","b");
@@ -287,6 +290,7 @@ io.on("connection", (socket) => {
     socket.on("checkmated", ({ roomID, winner }) => {
         const message = `Checkmate. ${winner === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
+        io.to(roomID).emit("showMessage", message);
         delete rooms[roomID];
     });
 
@@ -581,6 +585,7 @@ socket.on("move", ({ move, roomID, from, to }) => {
         socket.on("drawGame", ({ roomID }) => {
             const message = "The game ended in a draw.";
             io.to(roomID).emit("gameOver", message);
+            io.to(roomID).emit("showMessage", message);
             delete rooms[roomID];
         });
 
@@ -592,6 +597,7 @@ socket.on("move", ({ move, roomID, from, to }) => {
         const winner = color === 'w' ? 'Black' : 'White';
         const message = `Time's up! ${winner} wins by timeout.`;
         io.to(roomID).emit("gameOver", message);
+        io.to(roomID).emit("showMessage", message);
         delete rooms[roomID];
     });
 
@@ -604,6 +610,7 @@ socket.on("move", ({ move, roomID, from, to }) => {
         if (socket.id === white) {
             // Send message to the player who resigned
             socket.emit("gameOver", "You resigned. Black wins.");
+            io.to(roomID).emit("showMessage", `${rooms[roomID].whiteUsername} resigned. ${rooms[roomID].blackUsername} wins!`);
             
             // Send message to the opponent about the resignation
             if (black) {
@@ -617,6 +624,7 @@ socket.on("move", ({ move, roomID, from, to }) => {
         } else if (socket.id === black) {
             // Send message to the player who resigned
             socket.emit("gameOver", "You resigned. White wins.");
+            io.to(roomID).emit("showMessage", `${rooms[roomID].blackUsername} resigned. ${rooms[roomID].whiteUsername} wins!`);
             
             // Send message to the opponent about the resignation
             if (white) {
