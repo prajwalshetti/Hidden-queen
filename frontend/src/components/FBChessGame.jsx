@@ -11,7 +11,6 @@ import FBChessBoardWithValidation from './FBChessBoardWithValidation';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 import PlayOnlineButton from './ui/PlayOnlineButton';
-import GameStartNotification from './GameStartNotification';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -36,8 +35,8 @@ function FBChessGame() {
   const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
   const [roomIDSuffix,setRoomIDSuffix]=useState("_FB")
   const [boardOrientation,setBoardOrientation]=useState("white-below")
+  const [middleMessage,setMiddleMessage]=useState("");
   const [connected, setConnected] = useState(socket.connected);
-  const [showGameStartNotification, setShowGameStartNotification] = useState(false);  
   
   // Clock references and state
   const clockInterval = useRef(null);
@@ -157,11 +156,6 @@ function FBChessGame() {
       localStorage.removeItem('roomID');
       localStorage.removeItem('playerRole');
     });
-
-    socket.on("showStartedScreenInFB", (msg) => {
-      setShowGameStartNotification(true);
-      const timer = setTimeout(() => {setShowGameStartNotification(false);}, 2000);
-    });
     
     socket.on("playersInfo", (info) => {
       if (info.whiteUsername) setWhiteUsername(info.whiteUsername);
@@ -194,10 +188,10 @@ function FBChessGame() {
       completeJoinRoom(roomID)
     });
 
-    // socket.on("showMessage", (msg) => {
-    //   setMessage(msg);
-    //   setTimeout(() => setMessage(""), 10000);
-    // });
+    socket.on("showMessage", (msg) => {
+      setTimeout(() => setMiddleMessage(msg), 200);
+      setTimeout(() => setMiddleMessage(""), 2000);
+    });
 
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
 
@@ -241,7 +235,6 @@ function FBChessGame() {
       socket.off("generatedRoomId");
       socket.off("connect");
       socket.off("disconnect");
-      socket.off("showStartedScreenInFB");
     };
   }, []);
 
@@ -306,6 +299,7 @@ function FBChessGame() {
     setPlayerRole("");
     setBoardState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     setMessage("");
+    setMiddleMessage("");
     setGameEnded(false);
     
     // Reset clock
@@ -570,28 +564,32 @@ function FBChessGame() {
                     </div>
                   ) : (
 // Parent component structure
-<div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
-  <div className="w-full max-w-[90vw] sm:max-w-[400px]">
-    <div className="relative"> {/* This wrapper is crucial for positioning */}
-      {/* The chessboard component */}
-      <FBChessBoardWithValidation
-        socket={socket} 
-        roomID={roomID} 
-        playerRole={playerRole} 
-        boardState={boardState} 
-        gameEnded={gameEnded} 
-        boardOrientation={boardOrientation}
-        isConnected={connected}
-      />
-      
-      {/* The notification will be positioned relative to this container */}
-      <GameStartNotification 
-        isVisible={showGameStartNotification} 
-        onClose={() => setShowGameStartNotification(false)} 
-      />
-    </div>
-  </div>
-</div>
+          <div className="w-full max-w-full overflow-x-auto flex justify-center items-center">
+            <div className="w-full max-w-[90vw] sm:max-w-[400px]">
+                        <div className="relative"> {/* This wrapper is crucial for positioning */}
+                          {/* The chessboard component */}
+                        <FBChessBoardWithValidation
+                          socket={socket} 
+                          roomID={roomID} 
+                          playerRole={playerRole} 
+                          boardState={boardState} 
+                          gameEnded={gameEnded} 
+                          boardOrientation={boardOrientation}
+                          isConnected={connected}
+                        />
+                          
+                    {middleMessage && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className={`p-4 rounded-lg border-2 shadow-lg backdrop-blur-sm max-w-[80%] text-center font-mediumtransition-all duration-300 transform scale-105
+                          ${gameEnded ? 'bg-yellow-800/70 text-yellow-50 border-yellow-400 shadow-yellow-900/50': 'bg-green-900/70 text-green-50 border-green-400 shadow-green-900/50' }`}
+                        >
+                          <div className="text-wrap text-2xl md:text-lg">{middleMessage}</div>
+                        </div>
+                      </div>
+                    )}
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                 </div>
@@ -636,7 +634,6 @@ function FBChessGame() {
         </AnimatePresence>
       </motion.div>
       
-      {/* <GameStartNotification isVisible={showGameStartNotification} onClose={() => setShowGameStartNotification(false)} /> */}
     </div>
   );
 }
