@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Crown, X, Skull, Flag } from "lucide-react";
+import { Crown, X, Skull, Flag, Shield } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
@@ -23,79 +23,88 @@ const cards = [
   },
   { 
     id: 3, 
-    title: "Football Chess", 
-    description: "Reach your opponent's goal squares with any of your piece to win!",
-    icon: Flag,
+    title: "Morphed Kings", 
+    description: "Find the real king among 3 and capture it!",
+    icon: Shield,
     color: "border-green-500"
+  },
+  { 
+    id: 4, 
+    title: "Football Chess", 
+    description: "Reach your opponent's goal squares to win!",
+    icon: Flag,
+    color: "border-blue-500"
   },
 ];
 
 export default function ChessVariants() {
   const [showRules, setShowRules] = useState(false);
   const [activeVariant, setActiveVariant] = useState(null);
-  
+
   const openRules = (variantId) => {
     setActiveVariant(variantId);
     setShowRules(true);
   };
-  
+
   const closeRules = () => {
     setShowRules(false);
     setActiveVariant(null);
   };
-  
-return (
-  <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-8">
-    {/* Header */}
-    <div className="text-center mb-8 sm:mb-10 transition-all duration-300">
-      <h1 className="text-6xl sm:text-6xl font-bold pb-4 sm:pb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
-        How to play?
-      </h1>
-      <div className="mt-2 h-1 w-24 sm:w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto"></div>
-    </div>
-  
-    {/* Cards */}
-    <div className="flex flex-wrap justify-center gap-4 sm:gap-6 p-4 sm:p-6">
-      {cards.map((card) => (
-        <motion.div
-          key={card.id}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="cursor-pointer"
-          onClick={() => openRules(card.id)}
-        >
-          <Card className={`w-full sm:w-80 h-auto sm:h-44 border ${card.color} bg-gray-800 rounded-xl shadow-lg`}>
-            <CardContent className="p-4 sm:p-6 flex flex-col h-full justify-between">
-              <div>
-                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                  <card.icon size={20} />
-                  <h2 className="text-lg sm:text-xl font-bold">{card.title}</h2>
-                </div>
-                <p className="text-sm sm:text-base text-gray-300">{card.description}</p>
-              </div>
-              
-              <div className="flex justify-end mt-3 sm:mt-4">
-                <span className="text-xs sm:text-sm text-blue-400 flex items-center gap-1">
-                  View rules
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 18l6-6-6-6"/>
-                  </svg>
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
-    </div>
-    
-    {/* Rules Modals */}
-    {showRules && activeVariant === 1 && <HiddenQueenRules onClose={closeRules} />}
-    {showRules && activeVariant === 2 && <PoisonedPawnRules onClose={closeRules} />}
-    {showRules && activeVariant === 3 && <FootballChessRules onClose={closeRules} />}
-  </div>
-);
 
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-white p-4 sm:p-8 flex flex-col">
+      {/* Header */}
+      <div className="text-center mb-10">
+        <h1 className="text-5xl sm:text-6xl font-extrabold pb-4 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-lg">
+          How to play?
+        </h1>
+        <div className="mt-2 h-1 w-28 sm:w-36 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto rounded-full"></div>
+      </div>
+
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-7 px-2 sm:px-0 max-w-7xl mx-auto w-full">
+        {cards.map((card) => (
+          <motion.div
+            key={card.id}
+            whileHover={{ scale: 1.05, boxShadow: "0 8px 32px rgba(80,30,180,0.25)" }}
+            whileTap={{ scale: 0.96 }}
+            className="cursor-pointer transition-all"
+            onClick={() => openRules(card.id)}
+          >
+            <Card className={`w-full h-52 border-2 ${card.color} bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 rounded-2xl shadow-xl overflow-hidden`}>
+              <CardContent className="p-6 flex flex-col h-full justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="p-2 bg-white/10 rounded-full">
+                      <card.icon size={28} className="text-yellow-300" />
+                    </span>
+                    <h2 className="text-2xl font-bold tracking-tight">{card.title}</h2>
+                  </div>
+                  <p className="text-base text-gray-300 leading-snug">{card.description}</p>
+                </div>
+                <div className="flex justify-end mt-6">
+                  <span className="text-sm text-blue-400 flex items-center gap-1 font-semibold group">
+                    View rules
+                    <svg className="group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Rules Modals */}
+      {showRules && activeVariant === 1 && <HiddenQueenRules onClose={closeRules} />}
+      {showRules && activeVariant === 2 && <PoisonedPawnRules onClose={closeRules} />}
+      {showRules && activeVariant === 3 && <MorphedKingsRules onClose={closeRules} />}
+      {showRules && activeVariant === 4 && <FootballChessRules onClose={closeRules} />}
+    </div>
+  );
 }
+
 
 // Hidden Queen Rules Modal (Colorful & Animated)
 function HiddenQueenRules({ onClose }) {
@@ -421,6 +430,179 @@ function PoisonedPawnRules({ onClose }) {
             whileTap={{ scale: 0.95 }}
           >
             ♟ Start Playing!
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function MorphedKingsRules({ onClose }) {
+  const navigate = useNavigate();
+  return (
+    <motion.div 
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1, rotate: [0, 2, -2, 0] }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="w-full max-w-4xl h-5/6 bg-gradient-to-r from-orange-400 to-orange-500 text-white p-8 rounded-3xl shadow-2xl overflow-y-auto border-4 border-white mx-4 relative"
+      >
+        {/* Close button */}
+        <motion.button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white hover:text-gray-200"
+          whileHover={{ scale: 1.2, rotate: 90 }}
+          transition={{ duration: 0.2 }}
+        >
+          <X size={24} />
+        </motion.button>
+        
+        <motion.h1 
+          className="text-4xl md:text-5xl font-extrabold text-center mb-6 flex justify-center items-center gap-3"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+        >
+          <motion.div
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 5, repeat: Infinity }}
+          >
+            <span className="text-4xl text-yellow-200">♚</span>
+          </motion.div>
+          Morphed King Chess
+          <motion.div
+            animate={{ rotate: [0, -10, 10, 0] }}
+            transition={{ duration: 5, repeat: Infinity }}
+          >
+            <span className="text-4xl text-yellow-200">♚</span>
+          </motion.div>
+        </motion.h1>
+        
+        <div className="bg-white text-gray-900 p-6 rounded-xl shadow-lg mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">Core Rules</h2>
+          <div className="space-y-6">
+            <motion.div 
+              className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400"
+              whileHover={{ x: 5 }}
+            >
+              <h3 className="text-xl font-bold flex items-center">
+                <span className="text-2xl mr-2">1.</span> Choose Your True King
+              </h3>
+              <ul className="ml-8 mt-2 list-disc space-y-1">
+                <li>At the start, secretly select your true king: either your original king or one of your two rooks.</li>
+              </ul>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400"
+              whileHover={{ x: 5 }}
+            >
+              <h3 className="text-xl font-bold flex items-center">
+                <span className="text-2xl mr-2">2.</span> Hidden Identities
+              </h3>
+              <ul className="ml-8 mt-2 list-disc space-y-1">
+                <li>To your opponent, all three pieces (king and both rooks) appear as kings, making it impossible for them to know which is the real king.</li>
+              </ul>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400"
+              whileHover={{ x: 5 }}
+            >
+              <h3 className="text-xl font-bold flex items-center">
+                <span className="text-2xl mr-2">3.</span> Disguised Rooks
+              </h3>
+              <ul className="ml-8 mt-2 list-disc space-y-1">
+                <li>Your disguised rooks still move like rooks, even though they look like kings to your opponent.</li>
+              </ul>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-400"
+              whileHover={{ x: 5 }}
+            >
+              <h3 className="text-xl font-bold flex items-center">
+                <span className="text-2xl mr-2">4.</span> Real King Movement
+              </h3>
+              <ul className="ml-8 mt-2 list-disc space-y-1">
+                <li>The real king moves as a traditional king does in standard chess.</li>
+              </ul>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400"
+              whileHover={{ x: 5 }}
+            >
+              <h3 className="text-xl font-bold flex items-center">
+                <span className="text-2xl mr-2">5.</span> Capturing Disguised Rooks
+              </h3>
+              <ul className="ml-8 mt-2 list-disc space-y-1">
+                <li>If a disguised rook is captured, it is removed from the board and play continues.</li>
+              </ul>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-pink-50 p-4 rounded-lg border-l-4 border-pink-400"
+              whileHover={{ x: 5 }}
+            >
+              <h3 className="text-xl font-bold flex items-center">
+                <span className="text-2xl mr-2">6.</span> Winning the Game
+              </h3>
+              <ul className="ml-8 mt-2 list-disc space-y-1">
+                <li>Capture your opponent's real king to win the game.</li>
+              </ul>
+            </motion.div>
+          </div>
+        </div>
+
+        <div className="bg-white text-gray-900 p-6 rounded-xl shadow-lg mb-6">
+          <h2 className="text-2xl font-bold text-center mb-3">Special Rules</h2>
+          <ul className="space-y-2 text-lg">
+            <motion.li 
+              className="flex items-start"
+              whileHover={{ x: 5 }}
+            >
+              <span className="text-purple-500 font-bold mr-2">♟</span> 
+              There is <span className="font-bold">no check or checkmate</span> — kings can be directly captured without warning.
+            </motion.li>
+            <motion.li 
+              className="flex items-start"
+              whileHover={{ x: 5 }}
+            >
+              <span className="text-purple-500 font-bold mr-2">♟</span> 
+              Kings can move into or remain in threatened squares.
+            </motion.li>
+            <motion.li 
+              className="flex items-start"
+              whileHover={{ x: 5 }}
+            >
+              <span className="text-purple-500 font-bold mr-2">♟</span> 
+              <span className="font-bold">Castling is not allowed</span> in this variant.
+            </motion.li>
+            <motion.li 
+              className="flex items-start"
+              whileHover={{ x: 5 }}
+            >
+              <span className="text-purple-500 font-bold mr-2">♟</span> 
+              <span className="font-bold">En passant</span> pawn captures are not allowed.
+            </motion.li>
+          </ul>
+        </div>
+
+        {/* Close Button */}
+        <div className="flex justify-center mt-6">
+          <motion.button 
+            className="px-6 py-3 text-xl bg-yellow-300 text-gray-900 font-bold rounded-lg"
+            onClick={() => { navigate("/") }}
+            whileHover={{ scale: 1.1, backgroundColor: "#FBBF24" }}
+            whileTap={{ scale: 0.95 }}
+          >
+            ♚ Start Playing!
           </motion.button>
         </div>
       </motion.div>
