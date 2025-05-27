@@ -98,11 +98,11 @@ function NavBar() {
             </div>
           </div>
 
-          {/* Mobile slide-in menu */}
-          <div className={`md:hidden fixed left-0 top-16 bottom-0 w-64 z-[101] transition-transform duration-300 ease-in-out ${
-            menuOpen ? 'translate-x-0' : '-translate-x-full'
-          } bg-gray-900`}> 
-            <div className="flex flex-col space-y-1 p-4 h-full">
+          {/* Mobile popup menu */}
+          <div className={`md:hidden fixed left-4 top-20 w-64 z-[101] transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${
+            menuOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+          } bg-gray-900 border border-gray-700 rounded-lg shadow-xl`}> 
+            <div className="flex flex-col space-y-1 p-4">
               <NavItem to="/" end><Home className="w-5 h-5" /><span className="text-lg">Home</span></NavItem>
               <NavItem to="/rules"><BookOpen className="w-5 h-5" /><span className="text-lg">Rules</span></NavItem>
               <NavItem to="/about"><Info className="w-5 h-5" /><span className="text-lg">About</span></NavItem>
