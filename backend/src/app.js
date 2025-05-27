@@ -101,12 +101,18 @@ let rooms = {};
 let socketToRoom = {}; // Track which room each socket is in
 let socketRoles = {}; // Track each socket's role
 
-app.use(cors({ origin: url, methods: ['GET', 'POST'], credentials: true }));
+const allowedUrls = [url, newurl];
+app.use(cors({ 
+  origin: allowedUrls,
+  methods: ['GET', 'POST'],
+  credentials: true 
+}));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 import userRouter from "./routes/user.routes.js";
+app.set("trust proxy", 1);
 app.use("/api/v1/user", userRouter);
 app.get("/",(req,res)=>{
     res.send("Welcome to the Chess Game API!");

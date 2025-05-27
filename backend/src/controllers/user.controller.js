@@ -39,11 +39,12 @@ const loginuser=asyncHandler( async(req,res)=>{
     console.log(accessToken)
 
     res.cookie('token', accessToken, {
-        httpOnly: true,       // Prevent client-side access
-        secure: false,         // Send only over HTTPS
-        sameSite: 'Strict',   // Prevent CSRF
-        maxAge: 3600000       // Cookie expiration (1 hour)
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // true in production, false in dev
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' in production, 'lax' in dev
+        maxAge: 3600000
     });
+
 
     res.status(200).send(user)
 })
