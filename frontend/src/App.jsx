@@ -15,10 +15,12 @@ import FeedbackForm from './components/Feedback';
 import Settings from './components/Settings';
 import MKChessGame from './components/MKChessGame';
 import { Analytics } from '@vercel/analytics/react';
+import ScrollToTop from './utils/ScrollToTop';
 
 function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ScrollToTop/>
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
