@@ -17,7 +17,7 @@ const cards = [
   { 
     id: 2, 
     title: "Poisoned Pawn", 
-    description: "Designate a poisoned pawn - capturing it means instant defeat!",
+    description: "One pawn is dangerous-capture it and you will lose",
     icon: Skull,
     color: "border-red-500"
   },

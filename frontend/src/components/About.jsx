@@ -118,9 +118,9 @@ export default function AboutUs() {
       <div className="absolute top-0 left-0 w-full h-32 sm:h-64 bg-gradient-to-b from-purple-900/30 to-transparent"></div>
       <div className="absolute bottom-0 right-0 w-full h-32 sm:h-64 bg-gradient-to-t from-indigo-900/30 to-transparent"></div>
       
-      <div className="relative z-10 container mx-auto px-4 py-6 sm:py-10">
+      <div className="relative z-10 container mx-auto px-4 py-6 sm:py-5">
         {/* Header Section */}
-        <div className="text-center mb-10 sm:mb-20">
+        <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-4xl sm:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
             Meet Our Team
           </h1>
