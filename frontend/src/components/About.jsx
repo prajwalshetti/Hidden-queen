@@ -49,12 +49,10 @@ export default function AboutUs() {
   // Animation states
   const [isVisible, setIsVisible] = useState(false);
   const [activeCard, setActiveCard] = useState(null);
-  const [animateHeader, setAnimateHeader] = useState(false);
 
   // Initialize animations after component mounts
   useEffect(() => {
     setIsVisible(true);
-    setTimeout(() => setAnimateHeader(true), 300);
   }, []);
 
   // Sample team data with 3 members
@@ -62,10 +60,7 @@ export default function AboutUs() {
     {
       id: 1,
       name: "Prajwal Prakash Shetti",
-      role: "Full-Stack Developer",
       image: "/prajwal.jpg",
-      description: "Full-stack developer with strong problem-solving skills and expertise in React, NodeJs, and cloud architecture.",
-      skills: ["React", "NodeJS", "MongoDB", "AWS", "ExpressJS"],
       socials: {
         github: "https://github.com/prajwalshetti",
         linkedin: "https://www.linkedin.com/in/prajwal-shetti-b1aa2625a/",
@@ -75,10 +70,7 @@ export default function AboutUs() {
     {
       id: 2,
       name: "Prasanna Prasad Shenoy",
-      role: "Full-Stack Developer",
       image: "/prasanna.jpg",
-      description: "Combining full-stack development expertise with a deep interest in data analytics and statistics.",
-      skills: ["JavaScript", "Python", "React", "Data Viz", "SQL"],
       socials: {
         github: "https://github.com/PrasannaPrasadShenoy",
         linkedin: "https://www.linkedin.com/in/prasanna-prasad-shenoy-0a5b87261/",
@@ -88,10 +80,7 @@ export default function AboutUs() {
     {
       id: 3,
       name: "Pranav Shivanand Patil",
-      role: "Full-Stack Developer",
       image: "/pranav.jpg",
-      description: "Full-Stack developer with a keen interest in Machine Learning and its real-world applications.",
-      skills: ["Python", "ReactJS", "Docker", "ExpressJS", "Microservices"],
       socials: {
         github: "https://github.com/Pranav150604/",
         linkedin: "https://www.linkedin.com/in/pranav-patil-a61048278/",
@@ -130,20 +119,20 @@ export default function AboutUs() {
       <div className="absolute bottom-0 right-0 w-full h-32 sm:h-64 bg-gradient-to-t from-indigo-900/30 to-transparent"></div>
       
       <div className="relative z-10 container mx-auto px-4 py-6 sm:py-10">
-        {/* Animated Header Section */}
-        <div className={`text-center mb-10 sm:mb-20 transition-all duration-300`}>
-          <h1 className="text-6xl sm:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
+        {/* Header Section */}
+        <div className="text-center mb-10 sm:mb-20">
+          <h1 className="text-4xl sm:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent">
             Meet Our Team
           </h1>
           <div className="h-1 w-20 sm:w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 mx-auto"></div>
         </div>
 
-        {/* Team Members Section - Grid for mobile, row for desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        {/* Team Members Section - Cards side by side on desktop, stacked on mobile */}
+        <div className="flex flex-col lg:flex-row lg:justify-center lg:gap-8 space-y-6 lg:space-y-0 max-w-6xl mx-auto">
           {teamMembers.map((member, index) => (
             <div 
               key={member.id}
-              className={`w-full transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}
+              className={`w-full max-w-xs mx-auto lg:flex-1 lg:max-w-sm lg:mx-0 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}
               style={{ transitionDelay: `${index * 200}ms` }}
               onMouseEnter={() => setActiveCard(member.id)}
               onMouseLeave={() => setActiveCard(null)}
@@ -154,9 +143,9 @@ export default function AboutUs() {
                 className="bg-gray-800/70 backdrop-blur-sm rounded-xl overflow-hidden border-2 border-gray-700 h-full"
                 style={getCardStyles(member.id)}
               >
-                {/* Profile Image with Animated Overlay */}
-                <div className="relative h-80 sm:h-64 md:h-72 overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent z-10 transition-opacity duration-500 ${activeCard === member.id ? 'opacity-70' : 'opacity-50'}`}></div>
+                {/* Profile Image */}
+                <div className="relative h-80 sm:h-96 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent z-10"></div>
                   <img 
                     src={member.image} 
                     alt={member.name} 
@@ -165,60 +154,21 @@ export default function AboutUs() {
                       transform: activeCard === member.id ? 'scale(1.05)' : 'scale(1)'
                     }}
                   />
-                  
-                  {/* Animated profile badge */}
-                  <div className={`absolute bottom-4 left-4 z-20 bg-gradient-to-r ${
-                    index === 0 ? 'from-purple-600 to-indigo-600' : 
-                    index === 1 ? 'from-pink-600 to-purple-600' : 
-                    'from-indigo-600 to-blue-600'
-                  } px-3 py-1 rounded-full transition-all duration-500 ${
-                    activeCard === member.id ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-                  }`}>
-                    <p className="text-white text-sm font-medium">{member.role}</p>
-                  </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-4 sm:p-6 relative">
-                  <h3 className={`text-xl sm:text-2xl font-bold mb-2 transition-colors duration-500 ${
-                    index === 0 ? 'text-purple-300' : 
-                    index === 1 ? 'text-pink-300' : 
-                    'text-indigo-300'
-                  }`}>{member.name}</h3>
+                {/* Content - Name and Social Links */}
+                <div className="p-6 relative">
+                  <h3 className="text-xl sm:text-2xl font-bold mb-4 text-center text-white">
+                    {member.name}
+                  </h3>
                   
-                  <p className="text-gray-300 mb-4 text-sm sm:text-base leading-relaxed">
-                    {member.description}
-                  </p>
-                  
-                  {/* Skills */}
-                  <div className="mb-4">
-                    <p className="text-xs sm:text-sm text-gray-400 mb-2">Expertise:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {member.skills.map((skill, i) => (
-                        <span 
-                          key={i} 
-                          className={`px-2 py-1 text-xs rounded-full transition-all duration-500 ${
-                            activeCard === member.id ? 'bg-opacity-30 transform scale-110' : 'bg-opacity-20'
-                          } ${
-                            index === 0 ? 'bg-purple-500 text-purple-100' : 
-                            index === 1 ? 'bg-pink-500 text-pink-100' : 
-                            'bg-indigo-500 text-indigo-100'
-                          }`}
-                          style={{ transitionDelay: `${i * 50}ms` }}
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Social Icons with Animated Hover Effect */}
-                  <div className="flex space-x-4">
+                  {/* Social Icons */}
+                  <div className="flex justify-center space-x-6">
                     <a 
                       href={member.socials.github} 
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`text-gray-400 hover:text-white transition-all duration-300 transform ${activeCard === member.id ? 'hover:-translate-y-1' : ''}`}
+                      className="text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
                     >
                       <GitHubIcon />
                     </a>
@@ -226,7 +176,7 @@ export default function AboutUs() {
                       href={member.socials.linkedin} 
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`text-gray-400 hover:text-blue-400 transition-all duration-300 transform ${activeCard === member.id ? 'hover:-translate-y-1' : ''}`}
+                      className="text-gray-400 hover:text-blue-400 transition-all duration-300 transform hover:scale-110"
                     >
                       <LinkedinIcon />
                     </a>
@@ -234,7 +184,7 @@ export default function AboutUs() {
                       href={member.socials.instagram} 
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`text-gray-400 hover:text-pink-400 transition-all duration-300 transform ${activeCard === member.id ? 'hover:-translate-y-1' : ''}`}
+                      className="text-gray-400 hover:text-pink-400 transition-all duration-300 transform hover:scale-110"
                     >
                       <InstagramIcon />
                     </a>
@@ -251,29 +201,6 @@ export default function AboutUs() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* About Company Section with Animation */}
-        <div 
-          className={`relative mt-10 sm:mt-20 bg-gray-800/70 backdrop-blur-sm rounded-xl p-5 sm:p-8 md:p-10 border-l-4 border-purple-500 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}
-          style={{ transitionDelay: '600ms' }}
-        >
-          {/* Decorative element */}
-          <div className="absolute -top-4 -left-4 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-purple-600 opacity-30 blur-lg"></div>
-          <div className="absolute -bottom-4 -right-4 w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-indigo-600 opacity-30 blur-lg"></div>
-          
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">Our Mission</h2>
-          <div className="prose prose-sm sm:prose-base md:prose-lg prose-invert max-w-none">
-            <p className="text-gray-300 mb-3 sm:mb-4 text-sm sm:text-base leading-relaxed">
-              Founded with a passion for technology and innovation, our small but mighty team brings together diverse talents united by a common vision: creating exceptional digital experiences that make a difference.
-            </p>
-            <p className="text-gray-300 mb-3 sm:mb-4 text-sm sm:text-base leading-relaxed">
-              We specialize in full-stack development, machine learning, and data analytics, allowing us to deliver comprehensive solutions that meet the evolving needs of our clients.
-            </p>
-            <p className="text-gray-300 mb-3 sm:mb-4 text-sm sm:text-base leading-relaxed">
-              By staying at the forefront of technological advancements and embracing continuous learning, we transform complex challenges into elegant, efficient solutions that drive real value.
-            </p>
-          </div>
         </div>
       </div>
       
