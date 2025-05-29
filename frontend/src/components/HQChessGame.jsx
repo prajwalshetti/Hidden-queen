@@ -674,11 +674,15 @@ function HQChessGame() {
     <li>Each player secretly picks one pawn to be their <strong>Hidden Queen</strong>.</li>
     <li>It appears as a normal pawn to the opponent until you make a queen-like move.</li>
     <li>Capture the king to win</li>
-    <li>No En Passant, No checkmate</li>
+    <li>No En Passant,No checks, No checkmate</li>
   </ul>
 </div>
 
               </div>
+    <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 mb-4 block md:hidden"><div className="flex items-center justify-between">
+    <span className="text-gray-400 text-sm font-medium">Current Room ID:</span>
+    <span className="text-purple-400 font-mono text-sm bg-gray-800 px-2 py-1 rounded border border-gray-600">{roomID ? roomID.replace(/_(HQ|PP|MK|FB|PHANTOM)$/, '') : "Not set"}</span></div>
+    </div>
               
               <div className="h-full">
                 <ChatBox socket={socket} roomID={roomID} username={username || "Anonymous"} playerRole={playerRole}

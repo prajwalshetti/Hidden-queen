@@ -679,7 +679,10 @@ function PPChessGame() {
 </div>
 
               </div>
-              
+                  <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 mb-4 block md:hidden"><div className="flex items-center justify-between">
+    <span className="text-gray-400 text-sm font-medium">Current Room ID:</span>
+    <span className="text-purple-400 font-mono text-sm bg-gray-800 px-2 py-1 rounded border border-gray-600">{roomID ? roomID.replace(/_(HQ|PP|MK|FB|PHANTOM)$/, '') : "Not set"}</span></div>
+    </div>
               <div className="h-full">
                 <ChatBox socket={socket} roomID={roomID} username={username || "Anonymous"} playerRole={playerRole}
                   chatTitle={chatInfo.title} chatDescription={chatInfo.description}/>

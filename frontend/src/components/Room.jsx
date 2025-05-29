@@ -2,16 +2,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-function RoomCard({ joinRoom,roomIDSuffix }) {
+function RoomCard({ joinRoom, roomIDSuffix }) {
   const [roomID, setRoomID] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const handleJoin = () => {
     if (!roomID.trim()) {
       alert("Enter a valid room ID");
       return;
     }
-    joinRoom(roomID+roomIDSuffix);
+    joinRoom(roomID + roomIDSuffix);
   };
 
   return (
@@ -48,20 +49,58 @@ function RoomCard({ joinRoom,roomIDSuffix }) {
       </motion.div>
 
       <motion.div className="relative z-10">
-        <motion.h2 
-          className="text-2xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400"
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          Play with your friends
-        </motion.h2>
+        <div className="flex items-center justify-between mb-3">
+          <motion.h2 
+            className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            Play with your friends
+          </motion.h2>
+
+          {/* Question mark with tooltip */}
+          <div className="relative">
+            <motion.button
+              className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center text-gray-300 hover:text-white transition-all duration-200 text-sm"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              onClick={() => setShowTooltip(!showTooltip)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              ?
+            </motion.button>
+
+            {/* Tooltip */}
+            <motion.div
+              className="absolute right-0 top-8 bg-gray-900 text-white p-3 rounded-lg shadow-xl border border-gray-700 w-64 z-20"
+              initial={{ opacity: 0, y: -10, scale: 0.9 }}
+              animate={{ 
+                opacity: showTooltip ? 1 : 0,
+                y: showTooltip ? 0 : -10,
+                scale: showTooltip ? 1 : 0.9
+              }}
+              transition={{ duration: 0.2 }}
+              style={{ pointerEvents: showTooltip ? 'auto' : 'none' }}
+            >
+              <div className="text-sm">
+                <p className="text-purple-400 font-semibold mb-1">How Room ID works:</p>
+                <p className="text-gray-300">
+                  Room ID can be anything you want! Just make sure you and your friend enter the exact same Room ID.
+                </p>
+              </div>
+              {/* Arrow pointing to the question mark */}
+              <div className="absolute -top-2 right-3 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-gray-900"></div>
+            </motion.div>
+          </div>
+        </div>
 
         <div className="space-y-3">
           <div className="relative">
             <motion.input
               type="text"
-              placeholder="Room ID"
+              placeholder="Enter the same room ID as your friend"
               value={roomID}
               onChange={(e) => setRoomID(e.target.value)}
               onFocus={() => setIsFocused(true)}
@@ -95,7 +134,7 @@ function RoomCard({ joinRoom,roomIDSuffix }) {
           >
             <div className="flex items-center justify-center">
               <span className="mr-2">♟</span>
-              <span>Join Game</span>
+              <span>Create / Join Game</span>
             </div>
           </motion.button>
         </div>
