@@ -313,7 +313,10 @@ function HQChessGame() {
     }
   };
 
-  const confirmResign = () => setIsResigning(true);
+  const confirmResign = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setIsResigning(true);
+  }
   const cancelResign = () => setIsResigning(false);
 
   const handleLeaveRoom = () => {

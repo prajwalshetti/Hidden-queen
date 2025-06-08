@@ -591,8 +591,8 @@ socket.on("move", ({ move, roomID, from, to }) => {
     }
 
     io.to(roomID).emit("timeUpdate", {
-        whiteTime: room.whiteTime,
-        blackTime: room.blackTime,
+        whiteTime: room.whiteTime + 2,
+        blackTime: room.blackTime + 2,
         lastMoveTime: room.lastMoveTime
     });
 });
