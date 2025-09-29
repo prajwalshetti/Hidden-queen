@@ -463,6 +463,10 @@ io.on("connection", (socket) => {
                     whiteTime: room.whiteTime, blackTime: room.blackTime, lastMoveTime: room.lastMoveTime, currentTurn: room.boardState.split(" ")[1]
                 });
             }
+            if(roomID.startsWith("BOT_")){
+                room.black="BOT1234"
+                room.blackUsername = "BOT1234";
+            }
         } else if (!room.black) {
             room.black = socket.id;
             room.blackUsername = username || "Player";

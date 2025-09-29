@@ -11,6 +11,7 @@ import FBChessBoardWithValidation from './FBChessBoardWithValidation';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 import PlayOnlineButton from './ui/PlayOnlineButton';
+import PlayWithBotButton from './PlayWithBotButton';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -330,6 +331,15 @@ function FBChessGame() {
     socket.emit("playOnline", {variantType:"FB"});
   }
 
+  const handlePlayWithBot=()=>{
+    if (!username) {
+      setShowUsernameModal(true);
+      return;
+    }
+    console.log("Play With Bot pressed")
+    socket.emit("playWithBot", {variantType:"PHANTOM"});
+  }
+
   const getPlayerName = (role) => {
     if (role === 'w') return whiteUsername || "White Player";
     else if (role === 'b') return blackUsername || "Black Player";
@@ -424,6 +434,11 @@ function FBChessGame() {
                 {/* Play Online Button Component */}
                 <div className="w-full md:w-1/2 mb-6 md:mb-0">
                   <PlayOnlineButton handlePlayOnline={handlePlayOnline} />
+                </div>
+
+                {/* Play With Bot Button Component */}
+                <div className="w-full md:w-1/2">
+                  <PlayWithBotButton handlePlayWithBot={handlePlayWithBot} />
                 </div>
 
                 {/* Room Card Component */}

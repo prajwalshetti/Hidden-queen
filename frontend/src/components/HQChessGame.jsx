@@ -12,6 +12,7 @@ import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust 
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import PlayOnlineButton from './ui/PlayOnlineButton';
 import HiddenQueenSelectionModal from './HiddenQueenSelectionModal';
+import PlayWithBotButton from './PlayWithBotButton';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -288,6 +289,15 @@ function HQChessGame() {
     console.log("Play Online pressed")
     socket.emit("playOnline", {variantType:"HQ"});
   }
+
+  const handlePlayWithBot=()=>{
+    if (!username) {
+      setShowUsernameModal(true);
+      return;
+    }
+    console.log("Play With Bot pressed")
+    socket.emit("playWithBot", {variantType:"PHANTOM"});
+  }
   
   const handleUsernameSubmit = (e) => {
     e.preventDefault();
@@ -459,16 +469,21 @@ function HQChessGame() {
 
               
               <div className="flex flex-col md:flex-row gap-6 w-full p-4">
-  {/* Play Online Button Component */}
-  <div className="w-full md:w-1/2 mb-6 md:mb-0">
-    <PlayOnlineButton handlePlayOnline={handlePlayOnline} />
-  </div>
+                {/* Play Online Button Component */}
+                <div className="w-full md:w-1/2 mb-6 md:mb-0">
+                  <PlayOnlineButton handlePlayOnline={handlePlayOnline} />
+                </div>
 
-  {/* Room Card Component */}
-  <div className="w-full md:w-1/2">
-    <RoomCard joinRoom={joinRoom} roomIDSuffix={roomIDSuffix} />
-  </div>
-</div>              
+                {/* Play With Bot Button Component */}
+                <div className="w-full md:w-1/2">
+                  <PlayWithBotButton handlePlayWithBot={handlePlayWithBot} />
+                </div>
+
+                {/* Room Card Component */}
+                <div className="w-full md:w-1/2">
+                  <RoomCard joinRoom={joinRoom} roomIDSuffix={roomIDSuffix} />
+                </div>
+              </div>              
               <div className="mt-4">
                 <button onClick={() => setShowRules(!showRules)} 
                   className="bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg border border-gray-700 shadow-lg flex items-center space-x-2 transition-all duration-300 hover:shadow-purple-900/30 hover:shadow-lg">
