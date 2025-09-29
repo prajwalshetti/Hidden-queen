@@ -112,8 +112,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 import userRouter from "./routes/user.routes.js";
+import feedbackRouter from "./routes/feedback.routes.js";
 app.set("trust proxy", 1);
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1", feedbackRouter);
 app.get("/",(req,res)=>{
     res.send("Welcome to the Chess Game API!");
 })

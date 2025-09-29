@@ -12,6 +12,7 @@ import HQChessGame from './components/HQChessGame';
 import PPChessGame from './components/PPChessGame';
 import FBChessGame from './components/FBChessGame';
 import FeedbackForm from './components/Feedback';
+import FeedbackList from './components/FeedbackList';
 import Settings from './components/Settings';
 import MKChessGame from './components/MKChessGame';
 import { Analytics } from '@vercel/analytics/react';
@@ -36,6 +37,7 @@ function App() {
           <Route path="rules" element={<Rules />} /> 
           <Route path="about" element={<About />} /> 
           <Route path="feedback" element={<FeedbackForm />} /> 
+          <Route path="feedbacks" element={<FeedbackList />} /> 
           <Route path="settings" element={<Settings />} /> 
         </Route>
       </Routes>

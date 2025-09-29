@@ -28,7 +28,7 @@ export default function FeedbackForm() {
     setIsSubmitting(true);
     
     try {
-      // Update this URL to your Express server's address
+      // Submit to backend API
       const response = await fetch(`${import.meta.env.VITE_BASE_URL}/submit-feedback`, {
         method: 'POST',
         headers: {
