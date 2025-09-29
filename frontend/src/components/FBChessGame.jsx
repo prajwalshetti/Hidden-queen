@@ -337,7 +337,7 @@ function FBChessGame() {
       return;
     }
     console.log("Play With Bot pressed")
-    socket.emit("playWithBot", {variantType:"PHANTOM"});
+    socket.emit("playWithBot", {variantType:"FB"});
   }
 
   const getPlayerName = (role) => {

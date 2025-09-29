@@ -301,7 +301,7 @@ function MKChessGame() {
       return;
     }
     console.log("Play With Bot pressed")
-    socket.emit("playWithBot", {variantType:"PHANTOM"});
+    socket.emit("playWithBot", {variantType:"MK"});
   }
   
   const handleUsernameSubmit = (e) => {

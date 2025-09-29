@@ -40,7 +40,12 @@ function updateBoardStateToQueen(boardString, selectedColumn,isWhite) {
     boardRows[rowIndex] = row.join("");
     parts[0] = boardRows.join("/");
     return parts.join(" ");
-  }  
+}  
+
+  function getRandomInt(min, max) {
+    // min and max are inclusive
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
   function changeToQueen(roomID, isWhite, index) {
     const room = rooms[roomID];
@@ -163,8 +168,20 @@ io.on("connection", (socket) => {
         
         if (roomID.endsWith('_HQ')||roomID.endsWith('_MK')) {
             room.boardState = updateBoardStateToQueen(room.boardState, index, isWhite);
-        }        
+        }       
         changeToQueen(roomID, isWhite, index)
+
+        if (roomID.startsWith("BOT_") && (roomID.endsWith("_HQ")||roomID.endsWith("_PP")||roomID.endsWith("_MK"))) {
+            const randomnumber=getRandomInt(1,8)
+            
+            //for hq
+            if(roomID.endsWith("HQ"))room.boardState = updateBoardStateToQueen(room.boardState, randomnumber, !isWhite);
+
+            //for mk pp hq
+            changeToQueen(roomID, !isWhite, randomnumber)
+            console.log("white selected ",index," black selected ",randomnumber)
+        }
+         
         io.to(roomID).emit("boardState", room.boardState);
                 io.to(roomID).emit("playersHQ", {
             hqwsquare: room.hqwsquare,
@@ -246,6 +263,13 @@ io.on("connection", (socket) => {
         const room = rooms[roomID];
         if (!room) {console.error("Room not found:", roomID);return;}     
         room.boardState=chooseTheRealKing(roomID, isWhite, pieceNumber);
+        if(roomID.startsWith("BOT_")){
+            const randnum=[0,1,8][Math.floor(Math.random()*3)];
+            room.boardState=chooseTheRealKing(roomID,!isWhite,randnum);
+            room.hqbsquare="a1";
+            room.hqbstatus=1
+            console.log("white selected ",pieceNumber," black selected ",randnum)
+        }
         if (isWhite) {room.hqwsquare = "a1";room.hqwstatus = 1;} 
         else {room.hqbsquare = "a1";room.hqbstatus = 1;}
         io.to(roomID).emit("boardState", room.boardState);

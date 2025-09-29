@@ -296,7 +296,7 @@ function HQChessGame() {
       return;
     }
     console.log("Play With Bot pressed")
-    socket.emit("playWithBot", {variantType:"PHANTOM"});
+    socket.emit("playWithBot", {variantType:"HQ"});
   }
   
   const handleUsernameSubmit = (e) => {

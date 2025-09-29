@@ -360,7 +360,7 @@ function PPChessGame() {
       return;
     }
     console.log("Play With Bot pressed")
-    socket.emit("playWithBot", {variantType:"PHANTOM"});
+    socket.emit("playWithBot", {variantType:"PP"});
   }
 
   const getPlayerName = (role) => {
