@@ -11,6 +11,7 @@ import LoadingBoxes from './ui/LoadingBoxes';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
 import PlayOnlineButton from './ui/PlayOnlineButton';
+import PlayWithBotButton from './PlayWithBotButton';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -257,6 +258,7 @@ function ChessGame() {
   const completeJoinRoom = (roomID) => {
     setRoomID(roomID);
     socket.emit("joinRoom", { roomID, username });
+    
     setGameStarted(true);
     localStorage.setItem('roomID', roomID);
     
@@ -352,6 +354,15 @@ function ChessGame() {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const handlePlayWithBot=()=>{
+    if (!username) {
+      setShowUsernameModal(true);
+      return;
+    }
+    console.log("Play With Bot pressed")
+    socket.emit("playWithBot", {variantType:"PHANTOM"});
+  }
+
   const handlePlayOnline=()=>{
     if (!username) {
       setShowUsernameModal(true);
@@ -427,10 +438,16 @@ function ChessGame() {
     <PlayOnlineButton handlePlayOnline={handlePlayOnline} />
   </div>
 
-  {/* Room Card Component */}
+  {/* Play With Bot Button Component */}
+  <div className="w-full md:w-1/2">
+    <PlayWithBotButton handlePlayWithBot={handlePlayWithBot} />
+  </div>
+
+  {/* Play With Friends Button Component */}
   <div className="w-full md:w-1/2">
     <RoomCard joinRoom={joinRoom} roomIDSuffix={roomIDSuffix} />
   </div>
+
 </div>
              
             </motion.div>

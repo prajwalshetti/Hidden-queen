@@ -135,6 +135,19 @@ io.on("connection", (socket) => {
           socket.emit("generatedRoomId",  roomId );
         }
       });
+
+      socket.on("playWithBot", ({ variantType }) => {
+        if (waitingRooms[variantType]) {
+            const roomId = waitingRooms[variantType];
+            waitingRooms[variantType] = null;
+            if(socket.id!==rooms[roomId].white)
+            socket.emit("generatedRoomId",  roomId );
+          } else {
+            const roomId = "BOT_"+generateRoomId()+"_"+variantType;
+            waitingRooms[variantType] = roomId;
+            socket.emit("generatedRoomId",  roomId );
+          }
+      });
       
     socket.on("changeToQueen", ({ roomID, index, isWhite }) => {
         console.log(`Received changeToQueen for room ${roomID} with index ${index}`);
