@@ -8,7 +8,9 @@ import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
-function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded, boardOrientation, isConnected }) {
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded, boardOrientation, isConnected, botDifficulty = 10 }) {
     const [game, setGame] = useState(new Chess());
     const { pieceTheme, setPieceTheme } = usePieceTheme();
     const { getSquareStyles } = useLastMove(socket);
@@ -37,34 +39,80 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
     }, [game]);
 
     // Make move function (used by both drag and touch)
-    const makeMove = useCallback((sourceSquare, targetSquare) => {
+    const makeMove = useCallback(async (sourceSquare, targetSquare) => {
         if (gameEnded || !isConnected) return false;
-        if (playerRole !== "w" && playerRole !== "b") return false;
-        if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
+        // If roomID starts with BOT_, player is always white vs bot
+        const isBotGame = typeof roomID === "string" && roomID.startsWith("BOT_");
+        const effectiveRole = isBotGame ? "w" : playerRole;
+        if (effectiveRole !== "w" && effectiveRole !== "b") return false;
+        if ((effectiveRole === "w" && game.turn() !== "w") || (effectiveRole === "b" && game.turn() !== "b")) return false;
 
         try {
             const move = game.move({
                 from: sourceSquare,
                 to: targetSquare,
-                promotion: "q", // Always promote to queen
+                promotion: "q",
             });
 
             if (move === null) return false;
 
             setGame(new Chess(game.fen()));
-            socket.emit("move", { move: game.fen(), roomID, from: sourceSquare, to: targetSquare });
 
-            if (game.isCheckmate()) {
-                socket.emit("checkmated", { roomID, winner: playerRole });
-            } else if (game.isDraw()) {
-                socket.emit("drawGame", { roomID });
+            // Multiplayer flow
+            if (!isBotGame && socket) {
+                socket.emit("move", { move: game.fen(), roomID, from: sourceSquare, to: targetSquare });
             }
+
+            // End checks for both modes
+            if (isBotGame) {
+                const fenAfterPlayer = game.fen();
+                try {
+                    // show bot is "thinking"
+                    await delay(3000);
+                    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/bot/move`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ fen: fenAfterPlayer, difficulty: botDifficulty })
+                    });
+                    const data = await res.json();
+                    if (data && data.bestmove) {
+                        const uci = data.bestmove;
+                        const from = uci.slice(0, 2);
+                        const to = uci.slice(2, 4);
+                        const promo = uci.length > 4 ? uci.slice(4, 5) : undefined;
+
+                        const reply = game.move({ from, to, promotion: promo || "q" });
+                        if (reply) {
+                            
+                            setGame(new Chess(game.fen()));
+                            if (game.isCheckmate()) {
+                                socket.emit("checkmated", { roomID, winner: playerRole });
+                            } else if (game.isDraw()) {
+                                socket.emit("drawGame", { roomID });
+                            }
+                            
+                        }
+                    }
+                } catch (_) {
+                    // ignore bot errors; keep game state
+                }
+            }
+            if (!isBotGame && socket) {
+                if (game.isCheckmate()) {
+                    socket.emit("checkmated", { roomID, winner: effectiveRole });
+                } else if (game.isDraw()) {
+                    socket.emit("drawGame", { roomID });
+                }
+            }
+
+            // If bot game, fetch best reply and apply
+           
 
             return true;
         } catch (error) {
             return false;
         }
-    }, [game, gameEnded, isConnected, playerRole, socket, roomID]);
+    }, [game, gameEnded, isConnected, playerRole, socket, roomID, botDifficulty]);
 
     // Original drag and drop handler
     function onDrop(sourceSquare, targetSquare) {
@@ -74,6 +122,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
             setSelectedSquare(null);
             setPossibleMoves([]);
         }
+        
         return success;
     }
 
