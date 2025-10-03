@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
+import { saveGameFromRoom } from "./utils/saveGame.js";
 
 const app = express();
 const url = process.env.FRONT_END_URL;
@@ -57,24 +58,49 @@ function updateBoardStateToQueen(boardString, selectedColumn,isWhite) {
     if (isWhite) {
         room.hqwsquare = square;
         room.hqwstatus = 1; // Assigned
+        if(roomID.endsWith("_HQ"))room.databaseinfo.initialwhq = square;
+        if(roomID.endsWith("_PP"))room.databaseinfo.initialwpp = square;
         console.log("White Hidden Queen assigned to square: ", square);
     } else {
         room.hqbsquare = square;
         room.hqbstatus = 1; // Assigned
+        if(roomID.endsWith("_HQ"))room.databaseinfo.initialbhq = square;
+        if(roomID.endsWith("_PP"))room.databaseinfo.initialbpp = square;
         console.log("Black Hidden Queen assigned to square: ", square);
     }
 }
 
 function chooseTheRealKing(roomID, isWhite, pieceNumber) {
-    let boardState = rooms[roomID].boardState;
+    const room = rooms[roomID];
+    let boardState = room.boardState;
     let parts = boardState.split(" ");
     let boardPosition = parts[0];
     let ranks = boardPosition.split("/");
     
-    if (isWhite && pieceNumber == 8) ranks[7] = "RNBQRBNK";
-    else if (isWhite && pieceNumber == 1) ranks[7] = "KNBQRBNR";
-    else if (!isWhite && pieceNumber == 8) ranks[0] = "rnbqrbnk";
-    else if (!isWhite && pieceNumber == 1) ranks[0] = "knbqrbnr";
+    // Update the board state
+    if (isWhite) {
+        if (pieceNumber === 8) {
+            ranks[7] = "RNBQRBNK";
+            room.databaseinfo.initialwmk = "h1";
+        } else if (pieceNumber === 1) {
+            ranks[7] = "KNBQRBNR";
+            room.databaseinfo.initialwmk = "a1";
+        } else {
+            ranks[7] = "RNBQKBNR";
+            room.databaseinfo.initialwmk = "e1";
+        }
+    } else {
+        if (pieceNumber === 8) {
+            ranks[0] = "rnbqrbnk";
+            room.databaseinfo.initialbmk = "h8";
+        } else if (pieceNumber === 1) {
+            ranks[0] = "knbqrbnr";
+            room.databaseinfo.initialbmk = "a8";
+        } else {
+            ranks[0] = "rnbqkbnr";
+            room.databaseinfo.initialbmk = "e8";
+        }
+    }
 
     parts[0] = ranks.join("/");
     return parts.join(" ");
@@ -278,18 +304,24 @@ io.on("connection", (socket) => {
         if(room.hqwsquare!==null&&room.hqbsquare!==null)io.to(roomID).emit("showMessage","Game started!")
     });
 
-    socket.on("capturePP", ({ roomID, color }) => {
+    socket.on("capturePP", async ({ roomID, color }) => {
         const room = rooms[roomID];
         if (!room) return;
+        room.databaseinfo.result = color === "w" ? "white" : "black";
+        room.databaseinfo.resulttype = "poisoned pawn captured";
+        try { await saveGameFromRoom(roomID, room); } catch (error) { console.error("Error saving game:", error); }
         const message = `Poisoned pawn captured. ${color === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
                 io.to(roomID).emit("showMessage", message);
         delete rooms[roomID];
     });
 
-    socket.on("goalScored", ({ roomID, color }) => {
+    socket.on("goalScored", async ({ roomID, color }) => {
         const room = rooms[roomID];
         if (!room) return;
+        room.databaseinfo.result = color === "w" ? "white" : "black";
+        room.databaseinfo.resulttype = "goal scored";
+        try { await saveGameFromRoom(roomID, room); } catch (error) { console.error("Error saving game:", error); }
         const message = `Goal scored. ${color === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
         io.to(roomID).emit("showMessage", message);
@@ -324,9 +356,12 @@ io.on("connection", (socket) => {
         });
     });
 
-    socket.on("kingCaptured", ({ roomID, winner }) => {
+    socket.on("kingCaptured", async ({ roomID, winner }) => {
         if(!rooms[roomID])return;
         const room=rooms[roomID];
+        room.databaseinfo.result = winner === "w" ? "white" : "black";
+        room.databaseinfo.resulttype = "king captured";
+        try { await saveGameFromRoom(roomID, room); } catch (error) { console.error("Error saving game:", error); }
         const message = `King Captured. ${winner === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
         io.to(roomID).emit("showMessage", message);
@@ -342,7 +377,12 @@ io.on("connection", (socket) => {
     });
 
     // Checkmate handler
-    socket.on("checkmated", ({ roomID, winner }) => {
+    socket.on("checkmated", async ({ roomID, winner }) => {
+        const room = rooms[roomID];
+        if (!room) return;
+        room.databaseinfo.result = winner === "w" ? "white" : "black";
+        room.databaseinfo.resulttype = "checkmate";
+        try { await saveGameFromRoom(roomID, room); } catch (error) { console.error("Error saving game:", error); }
         const message = `Checkmate. ${winner === "w" ? "White" : "Black"} wins.`;
         io.to(roomID).emit("gameOver", message);
         io.to(roomID).emit("showMessage", message);
@@ -459,7 +499,21 @@ io.on("connection", (socket) => {
                 // Adding clock properties
                 whiteTime: 600, // 10 minutes in seconds
                 blackTime: 600,
-                lastMoveTime: Date.now() // Track when the last move was made
+                lastMoveTime: Date.now(), // Track when the last move was made
+                databaseinfo: {
+                    initialwhq: null,
+                    initialbhq: null,
+                    initialwpp: null,
+                    initialbpp: null,
+                    initialwmk: null,
+                    initialbmk: null,
+                    moves: [],
+                    result: null,
+                    resulttype: null,
+                    whiteuserid: null,
+                    blackuserid: null,
+                    isSaved: false
+                }
             };
         }
         
@@ -610,43 +664,54 @@ io.on("connection", (socket) => {
             blackUsername: room.blackUsername
         });
         io.to(roomID).emit("playersHQ", {
-            hqwsquare:room.hqwsquare,
-            hqbsquare:room.hqbsquare,
-            hqwstatus:room.hqwstatus,
-            hqbstatus:room.hqbstatus
+            hqwsquare: room.hqwsquare,
+            hqbsquare: room.hqbsquare,
+            hqwstatus: room.hqwstatus,
+            hqbstatus: room.hqbstatus
         });
     });
 
-// In your backend script (e.g., backend/index.mjs):
-socket.on("move", ({ move, roomID, from, to }) => {
-    if (!rooms[roomID]) return;
+    // Handle move events
+    socket.on("move", ({ move, roomID, from, to }) => {
+        if (!rooms[roomID]) return;
 
-    const room = rooms[roomID];
-    const { white, black } = room;
-    const playerRole = socket.id === white ? "w": socket.id === black ? "b": "spectator";
-    if (playerRole === "spectator") return;
+        const room = rooms[roomID];
+        const { white, black } = room;
+        const playerRole = socket.id === white ? "w" : socket.id === black ? "b" : "spectator";
+        if (playerRole === "spectator") return;
 
-    room.boardState = move;
-    room.lastMoveTime = Date.now();
+        room.boardState = move;
+        room.lastMoveTime = Date.now();
 
-    io.to(roomID).emit("move", move);
+        // Add move to the moves array in "e2e4" format
+        if (from && to) {
+            const moveNotation = from + to;
+            room.databaseinfo.moves.push(moveNotation);
+            console.log(`Move recorded: ${moveNotation} in room ${roomID}`);
+        }
 
-    if (from && to) {
-        io.to(roomID).emit("lastMoveSquares", { from, to });
-    }
+        // Broadcast the move to all clients in the room
+        io.to(roomID).emit("move", move);
 
-    io.to(roomID).emit("timeUpdate", {
-        whiteTime: room.whiteTime + 2,
-        blackTime: room.blackTime + 2,
-        lastMoveTime: room.lastMoveTime
-    });
+        if (from && to) {
+            io.to(roomID).emit("lastMoveSquares", { from, to });
+        }
+
+        io.to(roomID).emit("timeUpdate", {
+            whiteTime: room.whiteTime + 2,
+            blackTime: room.blackTime + 2,
+            lastMoveTime: room.lastMoveTime
+        });
 });
 
 
         // Draw handler
-        socket.on("drawGame", ({ roomID }) => {
+        socket.on("drawGame", async ({ roomID }) => {
             if(!rooms[roomID])return;
             const room=rooms[roomID];
+            room.databaseinfo.result = "draw";
+            room.databaseinfo.resulttype = "draw";
+            try { await saveGameFromRoom(roomID, room); } catch (error) { console.error("Error saving game:", error); }
             const message = "The game ended in a draw.";
             io.to(roomID).emit("gameOver", message);
             io.to(roomID).emit("showMessage", message);
@@ -654,12 +719,16 @@ socket.on("move", ({ move, roomID, from, to }) => {
             if(room.hqbstatus===1)room.hqbstatus=2;
             io.to(roomID).emit("playersHQ", {hqwsquare: room.hqwsquare,hqbsquare: room.hqbsquare,hqwstatus: room.hqwstatus,hqbstatus: room.hqbstatus});
             delete rooms[roomID];
-        });
+    });
 
     //local storage cleared
     //room not destoryed
-    socket.on("timeOut", ({ roomID, color }) => {
+    socket.on("timeOut", async ({ roomID, color }) => {
         if (!rooms[roomID]) return;
+        const room=rooms[roomID];
+        room.databaseinfo.result = color === "w" ? "black" : "white";
+        room.databaseinfo.resulttype = "time out";
+        try { await saveGameFromRoom(roomID, room); } catch (error) { console.error("Error saving game:", error); }
         
         const winner = color === 'w' ? 'Black' : 'White';
         const message = `Time's up! ${winner} wins by timeout.`;
@@ -670,10 +739,12 @@ socket.on("move", ({ move, roomID, from, to }) => {
 
     //local storage cleared
     //room not destoryed
-    socket.on("resign", ({ roomID }) => {
+    socket.on("resign", async ({ roomID }) => {
         if (!rooms[roomID]) return;
         const room=rooms[roomID];
-
+        room.databaseinfo.result = socket.id === room.white ? "black" : "white";
+        room.databaseinfo.resulttype = "resign";
+        try { await saveGameFromRoom(roomID, room); } catch (error) { console.error("Error saving game:", error); }
         const { white, black } = rooms[roomID];
         if (socket.id === white) {
             // Send message to the player who resigned
