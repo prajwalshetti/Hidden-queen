@@ -16,6 +16,19 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     const [botLastMove, setBotLastMove] = useState(null);
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+    // Track revealed status - once revealed, cannot be hidden again
+    const revealedStatusRef = useRef({ white: false, black: false });
+
+    // Initialize revealed status based on current status
+    useEffect(() => {
+        if (hqwstatus >= 2) {
+            revealedStatusRef.current.white = true;
+        }
+        if (hqbstatus >= 2) {
+            revealedStatusRef.current.black = true;
+        }
+    }, [hqwstatus, hqbstatus]);
+
     useEffect(() => {
         game.load(boardState);
         setGame(new Chess(game.fen()));
@@ -55,6 +68,10 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
     // Convert queen to pawn in FEN at specific square
     function disguiseQueenAsPawn(fen, square, color) {
         if (!square || square === "z1") return fen;
+        
+        // CRITICAL: Never disguise if already revealed
+        if (color === 'w' && revealedStatusRef.current.white) return fen;
+        if (color === 'b' && revealedStatusRef.current.black) return fen;
         
         const fenParts = fen.split(" ");
         const boardPosition = fenParts[0];
@@ -202,15 +219,21 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                 socket.emit("captureHQ", { roomID, color: "w" });
             }
 
-            // Reveal logic
-            const isWhiteReveal = playerRole === "w" && hqwstatus === 1 && sourceSquare === hqwsquare && isNonPawnMove(move);
-            const isBlackReveal = playerRole === "b" && hqbstatus === 1 && sourceSquare === hqbsquare && isNonPawnMove(move);
+            // Reveal logic - CRITICAL: Only reveal if status is exactly 1 (hidden)
+            const isWhiteReveal = playerRole === "w" && hqwstatus === 1 && !revealedStatusRef.current.white && sourceSquare === hqwsquare && isNonPawnMove(move);
+            const isBlackReveal = playerRole === "b" && hqbstatus === 1 && !revealedStatusRef.current.black && sourceSquare === hqbsquare && isNonPawnMove(move);
 
-            if (isWhiteReveal || isBlackReveal) {
+            if (isWhiteReveal) {
+                revealedStatusRef.current.white = true;
+                socket.emit("revealHQ", { roomID, color: playerRole });
+            }
+            
+            if (isBlackReveal) {
+                revealedStatusRef.current.black = true;
                 socket.emit("revealHQ", { roomID, color: playerRole });
             }
 
-            // Change HQ square if it was a normal move
+            // Change HQ square if it was a normal move - CRITICAL: Only if not captured (status < 3)
             const movedHQWhite = playerRole === "w" && hqwstatus < 3 && sourceSquare === hqwsquare;
             const movedHQBlack = playerRole === "b" && hqbstatus < 3 && sourceSquare === hqbsquare;
 
@@ -275,9 +298,9 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                         return true;
                     }
                     
-                    // Disguise white's HQ as pawn before sending to Stockfish
+                    // Disguise white's HQ as pawn before sending to Stockfish - ONLY if not revealed
                     let fenForStockfish = afterHumanFen;
-                    if (hqwstatus < 3 && hqwsquare && hqwsquare !== "z1") {
+                    if (hqwstatus < 3 && !revealedStatusRef.current.white && hqwsquare && hqwsquare !== "z1") {
                         fenForStockfish = disguiseQueenAsPawn(afterHumanFen, hqwsquare, 'w');
                     }
                     
@@ -352,10 +375,15 @@ function HQChessBoardWithValidation({ socket, roomID, playerRole, boardState, hi
                             return false;
                         };
                         
-                        const botRevealedHQ = botMovedHQ && hqbstatus === 1 && !isBotPawnLikeMove(reply);
+                        const botRevealedHQ = botMovedHQ && hqbstatus === 1 && !revealedStatusRef.current.black && !isBotPawnLikeMove(reply);
                         
-                        // If bot moved HQ but didn't reveal, disguise as pawn
-                        if (botMovedHQ && !botRevealedHQ) {
+                        // Mark as revealed if bot revealed HQ
+                        if (botRevealedHQ) {
+                            revealedStatusRef.current.black = true;
+                        }
+                        
+                        // If bot moved HQ but didn't reveal, disguise as pawn - ONLY if not already revealed
+                        if (botMovedHQ && !botRevealedHQ && !revealedStatusRef.current.black) {
                             botFen = disguiseQueenAsPawn(botFen, to, 'b');
                         }
                         
