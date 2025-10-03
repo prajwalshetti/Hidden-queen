@@ -54,6 +54,7 @@ function PPChessGame() {
   const clockInterval = useRef(null);
   const lastTickTime = useRef(Date.now());
   const [lastMoveTime, setLastMoveTime] = useState(null);
+  const botMoveInProgress = useRef(false);
 
   const validateMode = useValidateChessMode();
 
@@ -150,6 +151,7 @@ function PPChessGame() {
     socket.on("boardState", (state) => {
       setBoardState(state);
       setIsWhiteTurn(state.split(" ")[1] === "w");
+      botMoveInProgress.current = false;
     });
     
     socket.on("move", (move) => {
@@ -157,6 +159,7 @@ function PPChessGame() {
       setIsWhiteTurn(move.split(" ")[1] === "w");
       // Reset last tick time on move to prevent time skips
       lastTickTime.current = Date.now();
+      botMoveInProgress.current = false; 
     });
     
     socket.on("gameOver", (msg) => {
@@ -260,6 +263,19 @@ function PPChessGame() {
       socket.emit("updateUsername", { roomID, role: playerRole, username });
     }
   }, [username, roomID, playerRole]);
+
+  // Listen for local board updates in BOT games to flip clock based on FEN
+useEffect(() => {
+  const handler = (e) => {
+    const fen = e?.detail?.fen;
+    if (!fen) return;
+    setBoardState(fen);
+    setIsWhiteTurn(fen.split(" ")[1] === "w");
+    lastTickTime.current = Date.now();
+  };
+  window.addEventListener('localBoardUpdate', handler);
+  return () => window.removeEventListener('localBoardUpdate', handler);
+}, []);
 
   const joinRoom = (roomID) => {
     if (!username) {
