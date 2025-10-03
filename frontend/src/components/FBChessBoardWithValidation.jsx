@@ -8,7 +8,7 @@ import { CustomPiecesNF } from './CustomPiecesNF.jsx';
 import { usePieceTheme } from "../context/PieceThemeContext.jsx";
 import useLastMove from './hooks/useLastMove.jsx'; // adjust path if needed
 
-function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded, boardOrientation, isConnected }) {
+function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, gameEnded, boardOrientation, isConnected, botDifficulty = 10 }) {
     const [game, setGame] = useState(new Chess());
     const { pieceTheme, setPieceTheme } = usePieceTheme();
     const { getSquareStyles } = useLastMove(socket);
@@ -16,6 +16,9 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
     // Touch-based move states
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [possibleMoves, setPossibleMoves] = useState([]);
+    const [botLastMove, setBotLastMove] = useState(null);
+
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
     useEffect(() => {
         const newGame = new Chess();
@@ -37,10 +40,16 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
     }, [game]);
 
     // Make move function (used by both drag and touch)
-    const makeMove = useCallback((sourceSquare, targetSquare) => {
+    const makeMove = useCallback(async (sourceSquare, targetSquare) => {
         if (gameEnded || !isConnected) return false;
-        if (playerRole !== "w" && playerRole !== "b") return false;
-        if ((playerRole === "w" && game.turn() !== "w") || (playerRole === "b" && game.turn() !== "b")) return false;
+        const isBotGame = typeof roomID === "string" && roomID.startsWith("BOT_");
+        const turn = game.turn();
+        if (turn === 'w') {
+            // allow human move
+        } else {
+            if (isBotGame) return false; // bot plays black
+            if (playerRole !== 'b') return false;
+        }
 
         try {
             const move = game.move({
@@ -51,8 +60,10 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
 
             if (move === null) return false;
 
-            setGame(new Chess(game.fen()));
-            socket.emit("move", { move: game.fen(), roomID, from: sourceSquare, to: targetSquare });
+            const afterHumanFen = game.fen();
+            setGame(new Chess(afterHumanFen));
+            setBotLastMove(null);
+            socket.emit("move", { move: afterHumanFen, roomID, from: sourceSquare, to: targetSquare });
 
             console.log(playerRole, targetSquare);
             
@@ -69,15 +80,53 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
                 socket.emit("drawGame", { roomID });
             }
 
+            // If bot game and it's black to move now, let bot move after a short delay
+            if (isBotGame && new Chess(afterHumanFen).turn() === 'b') {
+                try {
+                    await delay(3000);
+                    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/bot/move`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fen: afterHumanFen, difficulty: botDifficulty })
+                    });
+                    const data = await res.json();
+                    if (data && data.bestmove) {
+                        const uci = data.bestmove;
+                        const from = uci.slice(0, 2);
+                        const to = uci.slice(2, 4);
+                        const promo = uci.length > 4 ? uci.slice(4, 5) : undefined;
+                        const botGame = new Chess(afterHumanFen);
+                        const reply = botGame.move({ from, to, promotion: promo || 'q' });
+                        if (reply) {
+                            const botFen = botGame.fen();
+                            setGame(new Chess(botFen));
+                            setBotLastMove({ from, to });
+            
+                            // ✅ Check for goal scoring (bot)
+                            if (to === 'e1' || to === 'd1') {
+                                socket.emit("goalScored", { roomID, color: "b" });
+                                return true; // stop further play
+                            }
+            
+                            // ✅ Notify parent for clock flip + state sync
+                            try {
+                                window.dispatchEvent(new CustomEvent('localBoardUpdate', { detail: { fen: botFen } }));
+                            } catch {}
+                        }
+                    }
+                } catch {}
+            }
+            
+
             return true;
         } catch (error) {
             return false;
         }
-    }, [game, gameEnded, isConnected, playerRole, socket, roomID]);
+    }, [game, gameEnded, isConnected, playerRole, socket, roomID, botDifficulty]);
 
     // Original drag and drop handler
-    function onDrop(sourceSquare, targetSquare) {
-        const success = makeMove(sourceSquare, targetSquare);
+    async function onDrop(sourceSquare, targetSquare) {
+        const success = await makeMove(sourceSquare, targetSquare);
         // Clear selection after drag move
         if (success) {
             setSelectedSquare(null);
@@ -189,18 +238,23 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
         });
 
         // Start with goal styles
-        const merged = { ...goalStyles };
+        let merged = { ...goalStyles };
         
-        // Add last move styles
-        for (const square in lastMoveStyles) {
-            if (goalStyles[square]) {
-                // Combine goal pattern + yellow border for last move
-                merged[square] = {
-                    ...goalStyles[square],
-                    boxShadow: 'inset 0 0 0 3px yellow',
-                };
-            } else {
-                merged[square] = lastMoveStyles[square];
+        // If bot highlighted move exists, prefer it over server lastMoveStyles
+        if (botLastMove && botLastMove.from && botLastMove.to) {
+            merged[botLastMove.from] = { ...(merged[botLastMove.from]||{}), backgroundColor: 'rgba(255, 235, 59, 0.35)' };
+            merged[botLastMove.to] = { ...(merged[botLastMove.to]||{}), backgroundColor: 'rgba(255, 235, 59, 0.35)' };
+        } else {
+            // Add last move styles when no bot move is present
+            for (const square in lastMoveStyles) {
+                if (goalStyles[square]) {
+                    merged[square] = {
+                        ...goalStyles[square],
+                        boxShadow: 'inset 0 0 0 3px yellow',
+                    };
+                } else {
+                    merged[square] = lastMoveStyles[square];
+                }
             }
         }
         
@@ -227,7 +281,7 @@ function FBChessBoardWithValidation({ socket, roomID, playerRole, boardState, ga
         }
         
         return merged;
-    }, [getSquareStyles, selectedSquare, possibleMoves, game]);
+    }, [getSquareStyles, selectedSquare, possibleMoves, game, botLastMove]);
 
     const containerRef = useRef(null);
     const [boardSize, setBoardSize] = useState(400);

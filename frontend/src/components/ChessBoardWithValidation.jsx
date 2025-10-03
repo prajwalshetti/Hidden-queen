@@ -13,6 +13,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
     
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [possibleMoves, setPossibleMoves] = useState([]);
+    const [botLastMove, setBotLastMove] = useState(null); // { from, to }
 
     useEffect(() => {
         const newGame = new Chess();
@@ -53,6 +54,8 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
 
             const newFen = game.fen();
             setGame(new Chess(newFen));
+            // Human just moved, clear any previous bot highlight
+            setBotLastMove(null);
             try { window.dispatchEvent(new CustomEvent('localBoardUpdate', { detail: { fen: newFen } })); } catch {}
 
             // Emit move for both multiplayer and bot games
@@ -88,6 +91,7 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
                             if (reply) {
                                 const botFen = botGame.fen();
                                 setGame(new Chess(botFen));
+                                setBotLastMove({ from, to });
                                 try { window.dispatchEvent(new CustomEvent('localBoardUpdate', { detail: { fen: botFen } })); } catch {}
                                 // do not emit to server in bot mode to avoid role checks; if needed, uncomment next line
                                 // socket.emit('move', { move: botFen, roomID });
@@ -178,8 +182,23 @@ function ChessBoardWithValidation({ socket, roomID, playerRole, boardState, game
             }
         });
 
-        return { ...lastMoveStyles, ...selectionStyles };
-    }, [getSquareStyles, selectedSquare, possibleMoves, game]);
+        // Highlight bot last move locally if present (when server doesn't broadcast lastMoveSquares)
+        const botStyles = {};
+        if (botLastMove && botLastMove.from && botLastMove.to) {
+            botStyles[botLastMove.from] = {
+                backgroundColor: 'rgba(255, 235, 59, 0.35)',
+                // boxShadow: 'inset 0 0 0 3px rgba(255, 235, 59, 0.8)'
+            };
+            botStyles[botLastMove.to] = {
+                backgroundColor: 'rgba(255, 235, 59, 0.35)',
+                // boxShadow: 'inset 0 0 0 3px rgba(255, 235, 59, 0.8)'
+            };
+        }
+
+        // If botStyles exist, prefer them over previous lastMoveStyles to avoid double highlights
+        const baseStyles = (botLastMove && botLastMove.from && botLastMove.to) ? {} : lastMoveStyles;
+        return { ...baseStyles, ...selectionStyles, ...botStyles };
+    }, [getSquareStyles, selectedSquare, possibleMoves, game, botLastMove]);
 
     const containerRef = useRef(null);
     const [boardSize, setBoardSize] = useState(400);
