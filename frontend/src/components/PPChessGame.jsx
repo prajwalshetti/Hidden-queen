@@ -13,6 +13,7 @@ import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust 
 import PlayOnlineButton from './ui/PlayOnlineButton';
 import PoisonedPawnSelectionModal from './PoisonedPawnSelectionModal';
 import PlayWithBotButton from './PlayWithBotButton';
+import axios from "axios"
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -286,10 +287,24 @@ useEffect(() => {
     completeJoinRoom(roomID);
   };
   
-  const completeJoinRoom = (roomID) => {
+  const completeJoinRoom = async (roomID) => {
     setHiddenQueenSelectionPhase(true);
     setRoomID(roomID);
-    socket.emit("joinRoom", { roomID, username });
+    let userId = null;
+      
+        try {
+          const { data } = await axios.get(
+            `${import.meta.env.VITE_BASE_URL}/user/getLoggedInUserId`,
+            { withCredentials: true } // send cookies automatically
+          );
+          userId = data ?? null;
+        } catch (err) {
+          console.warn("No logged-in user:", err?.response?.data || err.message);
+        }
+    
+        console.log(userId)
+      
+        socket.emit("joinRoom", { roomID, username, userId });
     setGameStarted(true);
     localStorage.setItem('roomID', roomID);
     

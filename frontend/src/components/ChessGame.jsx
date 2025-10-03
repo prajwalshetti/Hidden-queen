@@ -12,6 +12,7 @@ import PieceThemeSelector from './ui/PieceThemeSelector';
 import { useValidateChessMode } from '../utils/useValidateChessMode';
 import PlayOnlineButton from './ui/PlayOnlineButton';
 import PlayWithBotButton from './PlayWithBotButton';
+import axios from 'axios';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -307,15 +308,29 @@ function ChessGame() {
     completeJoinRoom(roomID);
   };
   
-  const completeJoinRoom = (roomID) => {
+  const completeJoinRoom = async (roomID) => {
+    let userId = null;
+  
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/user/getLoggedInUserId`,
+        { withCredentials: true } // send cookies automatically
+      );
+      userId = data ?? null;
+    } catch (err) {
+      console.warn("No logged-in user:", err?.response?.data || err.message);
+    }
+
+    console.log(userId)
+  
+    socket.emit("joinRoom", { roomID, username, userId });
     setRoomID(roomID);
-    socket.emit("joinRoom", { roomID, username });
-    
     setGameStarted(true);
-    localStorage.setItem('roomID', roomID);
-    
+    localStorage.setItem("roomID", roomID);
     socket.emit("requestTimeSync", { roomID });
   };
+   
+  
   
   const handleUsernameSubmit = (e) => {
     e.preventDefault();

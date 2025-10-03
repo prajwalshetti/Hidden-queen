@@ -478,8 +478,8 @@ io.on("connection", (socket) => {
         });
     });
 
-    socket.on("joinRoom", ({roomID, username}) => {
-        console.log(`Player ${socket.id} (${username}) is joining room ${roomID}`);
+    socket.on("joinRoom", ({roomID, username , userId}) => {
+        console.log(`Player ${socket.id} (${username}) is joining room ${roomID} with userid ${userId}`);
 
         // Create room if it doesn't exist
         if (!rooms[roomID]) {
@@ -533,6 +533,7 @@ io.on("connection", (socket) => {
         else if (!room.white) {
             room.white = socket.id;
             room.whiteUsername = username || "Player";
+            room.databaseinfo.whiteuserid = userId;
             role = "w";
             room.whiteTime = 600;
             room.blackTime = 600;
@@ -550,6 +551,7 @@ io.on("connection", (socket) => {
         } else if (!room.black) {
             room.black = socket.id;
             room.blackUsername = username || "Player";
+            room.databaseinfo.blackuserid = userId;
             role = "b";
             room.whiteTime = 600;
             room.blackTime = 600;

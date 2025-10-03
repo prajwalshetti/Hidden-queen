@@ -13,6 +13,7 @@ export const saveGameFromRoom = async (roomId, room) => {
   if (room.databaseinfo.isSaved) return null;
 
   const db = room.databaseinfo;
+  console.log(db);
 
   const payload = {
     roomId,
