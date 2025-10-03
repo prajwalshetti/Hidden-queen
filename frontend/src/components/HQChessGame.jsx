@@ -8,11 +8,12 @@ import ChatBox from './chat';
 import PlayerInfo from './username';
 import HQChessBoardWithValidation from './HQChessBoardWithValidation';
 import LoadingBoxes from './ui/LoadingBoxes';
-import { useValidateChessMode } from '../utils/useValidateChessMode'; // adjust path if needed
+import { useValidateChessMode } from '../utils/useValidateChessMode';
 import PieceThemeSelector from './ui/PieceThemeSelector';
 import PlayOnlineButton from './ui/PlayOnlineButton';
 import HiddenQueenSelectionModal from './HiddenQueenSelectionModal';
 import PlayWithBotButton from './PlayWithBotButton';
+import axios from 'axios';
 
 const socket = io(import.meta.env.VITE_SOCKET_BASE_URL);
 
@@ -30,8 +31,8 @@ function HQChessGame() {
   const [username, setUsername] = useState("");
   const [whiteUsername, setWhiteUsername] = useState("White Player");
   const [blackUsername, setBlackUsername] = useState("Black Player");
-  const [whiteTime, setWhiteTime] = useState(600); // 10 minutes
-  const [blackTime, setBlackTime] = useState(600); // 10 minutes
+  const [whiteTime, setWhiteTime] = useState(600);
+  const [blackTime, setBlackTime] = useState(600);
   const [isWhiteTurn, setIsWhiteTurn] = useState(true);
   const [usernameInput, setUsernameInput] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
@@ -40,43 +41,38 @@ function HQChessGame() {
   const [hqbsquare, setHqbsquare] = useState(null);
   const [hqwstatus, setHqwstatus] = useState(0);
   const [hqbstatus, setHqbstatus] = useState(0);
-  const [roomIDSuffix,setRoomIDSuffix]=useState("_HQ")
-  const [boardOrientation,setBoardOrientation]=useState("white-below")
-  const hiddenQueenData = {hqwsquare,hqbsquare,hqwstatus,hqbstatus,setHqwsquare,setHqbsquare,setHqwstatus,setHqbstatus};
-  const [isReplyingToDrawReq,setIsReplyingToDrawReq]=useState(false)
+  const [roomIDSuffix, setRoomIDSuffix] = useState("_HQ");
+  const [boardOrientation, setBoardOrientation] = useState("white-below");
+  const hiddenQueenData = {hqwsquare, hqbsquare, hqwstatus, hqbstatus, setHqwsquare, setHqbsquare, setHqwstatus, setHqbstatus};
+  const [isReplyingToDrawReq, setIsReplyingToDrawReq] = useState(false);
   const [connected, setConnected] = useState(socket.connected);
-  const [middleMessage,setMiddleMessage]=useState("");
+  const [middleMessage, setMiddleMessage] = useState("");
 
   const usernameRef = useRef(username);
   useEffect(() => {usernameRef.current = username;}, [username]);
 
-  // Clock references and state
   const clockInterval = useRef(null);
   const lastTickTime = useRef(Date.now());
   const [lastMoveTime, setLastMoveTime] = useState(null);
+  const botMoveInProgress = useRef(false);
 
-    const validateMode = useValidateChessMode();
+  const validateMode = useValidateChessMode();
 
-  // Effect for handling the game clock
   useEffect(() => {
-    // Clean up any existing interval
     if (clockInterval.current) {
       clearInterval(clockInterval.current);
       clockInterval.current = null;
     }
 
-    // Only start the clock if the game has started and not ended
     if (gameStarted && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player" && hqwsquare !== null && hqbsquare !== null) {
-      // lastTickTime.current = Date.now(); // Reset the timer reference when clock starts
       clockInterval.current = setInterval(() => {
         const now = Date.now();
-        const elapsed = (now - lastTickTime.current)*1.25 / 1000; // Convert to seconds
+        const elapsed = (now - lastTickTime.current) * 1.25 / 1000;
         lastTickTime.current = now;
 
-        if (isWhiteTurn&&connected) {
+        if (isWhiteTurn && connected) {
           setWhiteTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
-            // Emit time update to keep server in sync
             socket.emit("updateTime", {
               roomID,
               whiteTime: newTime,
@@ -90,10 +86,9 @@ function HQChessGame() {
             
             return newTime;
           });
-        } else if(connected){
+        } else if (connected) {
           setBlackTime(prevTime => {
             const newTime = Math.max(0, prevTime - elapsed);
-            // Emit time update to keep server in sync
             socket.emit("updateTime", {
               roomID,
               whiteTime,
@@ -108,7 +103,7 @@ function HQChessGame() {
             return newTime;
           });
         }
-      }, 100); // Update every 100ms for smoother countdown
+      }, 100);
     }
 
     return () => {
@@ -116,7 +111,7 @@ function HQChessGame() {
         clearInterval(clockInterval.current);
       }
     };
-  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername, hqwsquare, hqbsquare,connected]);
+  }, [gameStarted, gameEnded, isWhiteTurn, whiteTime, blackTime, whiteUsername, blackUsername, hqwsquare, hqbsquare, connected]);
 
   useEffect(() => {
     const savedRoomID = localStorage.getItem('roomID');
@@ -150,13 +145,14 @@ function HQChessGame() {
     socket.on("boardState", (state) => {
       setBoardState(state);
       setIsWhiteTurn(state.split(" ")[1] === "w");
+      botMoveInProgress.current = false;
     });
     
     socket.on("move", (move) => {
       setBoardState(move);
       setIsWhiteTurn(move.split(" ")[1] === "w");
-      // Reset last tick time on move to prevent time skips
       lastTickTime.current = Date.now();
+      botMoveInProgress.current = false;
     });
     
     socket.on("gameOver", (msg) => {
@@ -171,21 +167,18 @@ function HQChessGame() {
       if (info.blackUsername) setBlackUsername(info.blackUsername);
     });
 
-    socket.on("playersHQ",(info)=>{
-      if(info.hqwsquare) setHqwsquare(info.hqwsquare);
-      if(info.hqbsquare) setHqbsquare(info.hqbsquare);
-      if(info.hqwstatus !== undefined) setHqwstatus(info.hqwstatus);
-      if(info.hqbstatus !== undefined) setHqbstatus(info.hqbstatus);
+    socket.on("playersHQ", (info) => {
+      if (info.hqwsquare) setHqwsquare(info.hqwsquare);
+      if (info.hqbsquare) setHqbsquare(info.hqbsquare);
+      if (info.hqwstatus !== undefined) setHqwstatus(info.hqwstatus);
+      if (info.hqbstatus !== undefined) setHqbstatus(info.hqbstatus);
     });
     
-    // New listeners for time synchronization
     socket.on("timeSync", (timeData) => {
       setWhiteTime(timeData.whiteTime);
       setBlackTime(timeData.blackTime);
       setLastMoveTime(timeData.lastMoveTime);
       setIsWhiteTurn(timeData.currentTurn === "w");
-      
-      // Reset the tick timer to prevent jumps
       lastTickTime.current = Date.now();
     });
     
@@ -193,15 +186,13 @@ function HQChessGame() {
       setWhiteTime(timeData.whiteTime);
       setBlackTime(timeData.blackTime);
       setLastMoveTime(timeData.lastMoveTime);
-      
-      // Reset the tick timer to prevent jumps
       lastTickTime.current = Date.now();
     });
 
     socket.on("generatedRoomId", (roomId) => {
-      let roomID=String(roomId)
-      console.log(roomID)
-      completeJoinRoom(roomID)
+      let roomID = String(roomId);
+      console.log(roomID);
+      completeJoinRoom(roomID);
     });
 
     socket.on("showMessage", (msg) => {
@@ -211,8 +202,8 @@ function HQChessGame() {
     
     socket.on("replyToDrawReq", () => setIsReplyingToDrawReq(true));
 
-    socket.on("connect",    () => {
-      setConnected(true)
+    socket.on("connect", () => {
+      setConnected(true);
       const savedRoomID = localStorage.getItem('roomID');
       const savedRole = localStorage.getItem('playerRole');
       const savedUsername = localStorage.getItem('username');
@@ -236,6 +227,7 @@ function HQChessGame() {
         }
       }
     });
+    
     socket.on("disconnect", () => setConnected(false));
 
     return () => {
@@ -261,6 +253,19 @@ function HQChessGame() {
     }
   }, [username, roomID, playerRole]);
 
+  // Listen for local board updates in BOT games
+  useEffect(() => {
+    const handler = (e) => {
+      const fen = e?.detail?.fen;
+      if (!fen) return;
+      setBoardState(fen);
+      setIsWhiteTurn(fen.split(" ")[1] === "w");
+      lastTickTime.current = Date.now();
+    };
+    window.addEventListener('localBoardUpdate', handler);
+    return () => window.removeEventListener('localBoardUpdate', handler);
+  }, []);
+
   const joinRoom = (roomID) => {
     if (!username) {
       setShowUsernameModal(true);
@@ -270,34 +275,46 @@ function HQChessGame() {
     completeJoinRoom(roomID);
   };
   
-  const completeJoinRoom = (roomID) => {
+  const completeJoinRoom = async(roomID) => {
     setHiddenQueenSelectionPhase(true);
     setRoomID(roomID);
-    socket.emit("joinRoom", { roomID, username });
+    let userId = null;
+  
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/user/getLoggedInUserId`,
+        { withCredentials: true } // send cookies automatically
+      );
+      userId = data ?? null;
+    } catch (err) {
+      console.warn("No logged-in user:", err?.response?.data || err.message);
+    }
+
+    console.log(userId)
+  
+    socket.emit("joinRoom", { roomID, username, userId });
     setGameStarted(true);
     localStorage.setItem('roomID', roomID);
-    
-    // Request time sync when joining a room
     socket.emit("requestTimeSync", { roomID });
   };
 
-  const handlePlayOnline=()=>{
+  const handlePlayOnline = () => {
     if (!username) {
       setShowUsernameModal(true);
       return;
     }
-    console.log("Play Online pressed")
-    socket.emit("playOnline", {variantType:"HQ"});
-  }
+    console.log("Play Online pressed");
+    socket.emit("playOnline", {variantType: "HQ"});
+  };
 
-  const handlePlayWithBot=()=>{
+  const handlePlayWithBot = () => {
     if (!username) {
       setShowUsernameModal(true);
       return;
     }
-    console.log("Play With Bot pressed")
-    socket.emit("playWithBot", {variantType:"HQ"});
-  }
+    console.log("Play With Bot pressed");
+    socket.emit("playWithBot", {variantType: "HQ"});
+  };
   
   const handleUsernameSubmit = (e) => {
     e.preventDefault();
@@ -316,7 +333,7 @@ function HQChessGame() {
 
   const handleResign = () => {
     if (playerRole !== "spectator") {
-      setIsResigning(false)
+      setIsResigning(false);
       socket.emit("resign", { roomID });
       setMessage(`You resigned. ${playerRole === 'w' ? 'Black' : 'White'} wins.`);
       setGameEnded(true);
@@ -324,9 +341,10 @@ function HQChessGame() {
   };
 
   const confirmResign = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setIsResigning(true);
-  }
+  };
+  
   const cancelResign = () => setIsResigning(false);
 
   const handleLeaveRoom = () => {
@@ -340,17 +358,12 @@ function HQChessGame() {
     setMessage("");
     setMiddleMessage("");
     setGameEnded(false);
-    
-    // Reset clock
     setWhiteTime(600);
     setBlackTime(600);
-    
-    // Reset hidden queen data
     setHqwsquare(null);
     setHqbsquare(null);
     setHqwstatus(0);
     setHqbstatus(0);
-    
     navigate('/');
   };
   
@@ -384,21 +397,15 @@ function HQChessGame() {
     );
   };  
 
-  // Handle hidden queen selection
   const handleHiddenQueenSelection = (col) => {
     console.log("The pawn is selected on the column", col);
-    let file = String.fromCharCode(96 + col); // converts 1->a, 2->b, etc.
-    // For white, hidden queen pawn is on rank 2; for black, rank 7.
+    let file = String.fromCharCode(96 + col);
     let rank = playerRole === 'w' ? "2" : "7";
     const selectedSquare = file + rank;
-        
-    // Emit the event to the backend
     socket.emit("changeToQueen", { roomID, index: col, isWhite: playerRole === 'w' });
-    
     setHiddenQueenSelectionPhase(false);
   };
 
-  // Format time for display (convert seconds to mm:ss format)
   const formatTime = (timeInSeconds) => {
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = Math.floor(timeInSeconds % 60);
@@ -444,7 +451,7 @@ function HQChessGame() {
             <motion.div key="lobby" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }} className="space-y-6">
               <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-6">
-              <h2 className="text-xl font-bold mb-4 text-purple-400">Set Your Username</h2>
+                <h2 className="text-xl font-bold mb-4 text-purple-400">Set Your Username</h2>
                 <div className="flex items-center space-x-3">
                   <input type="text" value={usernameInput} onChange={(e) => setUsernameInput(e.target.value)}
                     className="flex-grow bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -467,23 +474,20 @@ function HQChessGame() {
                 )}
               </div>
 
-              
               <div className="flex flex-col md:flex-row gap-6 w-full p-4">
-                {/* Play Online Button Component */}
                 <div className="w-full md:w-1/2 mb-6 md:mb-0">
                   <PlayOnlineButton handlePlayOnline={handlePlayOnline} />
                 </div>
 
-                {/* Play With Bot Button Component */}
                 <div className="w-full md:w-1/2">
                   <PlayWithBotButton handlePlayWithBot={handlePlayWithBot} />
                 </div>
 
-                {/* Room Card Component */}
                 <div className="w-full md:w-1/2">
                   <RoomCard joinRoom={joinRoom} roomIDSuffix={roomIDSuffix} />
                 </div>
               </div>              
+              
               <div className="mt-4">
                 <button onClick={() => setShowRules(!showRules)} 
                   className="bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg border border-gray-700 shadow-lg flex items-center space-x-2 transition-all duration-300 hover:shadow-purple-900/30 hover:shadow-lg">
@@ -519,13 +523,10 @@ function HQChessGame() {
                     <div className="mt-4">
                       <p className="text-gray-300 font-semibold">Hidden Queen:</p>
                       {playerRole === 'w' && (
-                        <p>Your hidden queen: {hqwsquare || "Not selected"} 
-                        
-                        </p>
+                        <p>Your hidden queen: {hqwsquare || "Not selected"}</p>
                       )}
                       {playerRole === 'b' && (
-                        <p>Your hidden queen: {hqbsquare || "Not selected"}
-                        </p>
+                        <p>Your hidden queen: {hqbsquare || "Not selected"}</p>
                       )}
                     </div>
                   )}
@@ -540,56 +541,56 @@ function HQChessGame() {
               </div>
               
               <div className="md:col-span-1 flex flex-col space-y-4">
-              {(playerRole==="b"||boardOrientation === "black-below") ? (
-                <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded&&whiteUsername !== "White Player" &&blackUsername !== "Black Player"&& hqwsquare !== null && hqbsquare !== null} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
-              ) : (
-                <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded&&whiteUsername !== "White Player" &&blackUsername !== "Black Player"&& hqwsquare !== null && hqbsquare !== null} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
-              )}
+                {(playerRole === "b" || boardOrientation === "black-below") ? (
+                  <PlayerInfo username={getPlayerName('w')} rating={null} isActive={isWhiteTurn && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player" && hqwsquare !== null && hqbsquare !== null} timeRemaining={whiteTime} onTimeUp={() => handleTimeUp('white')} playerColor="white" isYou={playerRole === 'w'} formattedTime={formatTime(whiteTime)} />
+                ) : (
+                  <PlayerInfo username={getPlayerName('b')} rating={null} isActive={!isWhiteTurn && !gameEnded && whiteUsername !== "White Player" && blackUsername !== "Black Player" && hqwsquare !== null && hqbsquare !== null} timeRemaining={blackTime} onTimeUp={() => handleTimeUp('black')} playerColor="black" isYou={playerRole === 'b'} formattedTime={formatTime(blackTime)} />
+                )}
                 
                 <div className="bg-gray-800 p-4 rounded-xl shadow-2xl border border-gray-700">
-                <div className="flex justify-between items-center mb-4">
-                    
+                  <div className="flex justify-between items-center mb-4">
                     <div className="flex flex-row space-x-1 sm:space-y-0">
-                        {(playerRole === "spectator" || gameEnded || hqbsquare === null || hqwsquare === null) && (
-                          <button
-                            onClick={handleLeaveRoom}
-                            className="sm:w-auto bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-center"
-                          >
-                            Leave Room
-                          </button>
-                        )}
-  
-                        {gameEnded && (
-                          <button
-                            onClick={() => navigate("/feedback")}
-                            className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
-                          >
-                            Give Feedback
-                          </button>
-                        )}
-  
-                        {playerRole === "spectator" && !gameEnded && (
-                          <button
-                            onClick={toggleBoardOrientation}
-                            className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
-                          >
-                            Flip Board
-                          </button>
-                        )}
-                      </div>
-  
-  {                    (playerRole!="spectator"&&!gameEnded)&&(<div className={`flex items-center mb-2 sm:mb-0 ${connected ? "text-green-500" : "text-red-500"}`}>
-    <span className={`w-2 h-2 mr-2 rounded-full animate-pulse ${connected ? "bg-green-500" : "bg-red-500"}`} />
-    {connected ? "Connected" : "Disconnected"}
-  </div>)}
-  
+                      {(playerRole === "spectator" || gameEnded || hqbsquare === null || hqwsquare === null) && (
+                        <button
+                          onClick={handleLeaveRoom}
+                          className="sm:w-auto bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all duration-300 text-center"
+                        >
+                          Leave Room
+                        </button>
+                      )}
+
+                      {gameEnded && (
+                        <button
+                          onClick={() => navigate("/feedback")}
+                          className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
+                        >
+                          Give Feedback
+                        </button>
+                      )}
+
+                      {playerRole === "spectator" && !gameEnded && (
+                        <button
+                          onClick={toggleBoardOrientation}
+                          className="sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg shadow-md font-semibold hover:scale-105 transition-transform duration-300 text-center"
+                        >
+                          Flip Board
+                        </button>
+                      )}
                     </div>
 
+                    {(playerRole !== "spectator" && !gameEnded) && (
+                      <div className={`flex items-center mb-2 sm:mb-0 ${connected ? "text-green-500" : "text-red-500"}`}>
+                        <span className={`w-2 h-2 mr-2 rounded-full animate-pulse ${connected ? "bg-green-500" : "bg-red-500"}`} />
+                        {connected ? "Connected" : "Disconnected"}
+                      </div>
+                    )}
+                  </div>
+
                   <HiddenQueenSelectionModal
-  isOpen={hiddenQueenSelectionPhase && (playerRole === 'w' || playerRole === 'b')}
-  playerRole={playerRole}
-  onSelect={handleHiddenQueenSelection}
-/>
+                    isOpen={hiddenQueenSelectionPhase && (playerRole === 'w' || playerRole === 'b')}
+                    playerRole={playerRole}
+                    onSelect={handleHiddenQueenSelection}
+                  />
                   
                   {isResigning && (
                     <div className="mb-4 p-4 bg-gray-700 rounded-lg border border-gray-600">
@@ -604,33 +605,41 @@ function HQChessGame() {
                       </div>
                     </div>
                   )}
-{isReplyingToDrawReq && !gameEnded && (
-  <div className="mb-4 p-3 sm:p-4 bg-gray-700 rounded-lg border border-gray-600 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:justify-between sm:space-x-4">
-    <p className="text-white text-center sm:text-left">Your opponent offered a draw</p>
-    <div className="flex flex-row space-x-2">
-      <button 
-        onClick={() => socket.emit("drawGame", { roomID })} 
-        className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
-      >
-        Accept
-      </button>
-      <button 
-        onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole });setIsReplyingToDrawReq(false)}} 
-        className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
-      >
-        Decline
-      </button>
-    </div>
-  </div>
-)}
+
+                  {isReplyingToDrawReq && !gameEnded && (
+                    <div className="mb-4 p-3 sm:p-4 bg-gray-700 rounded-lg border border-gray-600 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:justify-between sm:space-x-4">
+                      <p className="text-white text-center sm:text-left">Your opponent offered a draw</p>
+                      <div className="flex flex-row space-x-2">
+                        <button 
+                          onClick={() => socket.emit("drawGame", { roomID })} 
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
+                        >
+                          Accept
+                        </button>
+                        <button 
+                          onClick={() => {socket.emit("drawDeclined", { roomID, color: playerRole }); setIsReplyingToDrawReq(false)}} 
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   
                   {message && (
-                      <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>
+                    <div className={`mb-4 p-3 rounded-lg border ${gameEnded ? 'bg-purple-900/50 text-purple-200 border-purple-700' : 'bg-yellow-900/50 text-yellow-200 border-yellow-700'}`}>
                       {message}
                     </div>
                   )}
                   
-                  {(hqwsquare === null || hqbsquare === null) ? (
+                  {/* {(hqwsquare === null || hqbsquare === null) ? (
+                    <div className="flex flex-col justify-center items-center min-h-[70vh] bg-black text-white space-y-4">
+                      <LoadingBoxes />
+                    </div>
+                  ) : (
+                    <div className="w-full max- */}
+
+                    {(hqwsquare === null || hqbsquare === null) ? (
                     <div className="flex flex-col justify-center items-center min-h-[70vh] bg-black text-white space-y-4">
                       <LoadingBoxes />
                     </div>
